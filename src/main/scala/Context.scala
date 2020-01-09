@@ -5,9 +5,16 @@ import org.apache.spark.sql.SparkSession
 object Context {
 
   // Path to data
-  val dataPath = "/tmp/data" // System.getProperty("user.dir") + "/data"
+  val dataPath = "/tmp/data/" // System.getProperty("user.dir") + "/data"
 
-  val outputPath = "/tmp/bigdata" // System.getProperty("user.dir") + "/output"
+  val outputPath = "/tmp/bigdata/"
+
+  val refYear = "2019"
+  val refMonth = "12"
+
+  def refPeriod : String = {
+    refYear + refMonth
+  }
 
   // Create and config a Spark session
   def createSession(): SparkSession = {
