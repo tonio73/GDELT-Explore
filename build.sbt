@@ -25,5 +25,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % SparkVersion % dependencyScope exclude("org.apache.hadoop", "*"),
   "org.apache.spark" %% "spark-sql" % SparkVersion % dependencyScope exclude("org.apache.hadoop", "*"),
   "org.apache.hadoop" % "hadoop-mapreduce-client-core" % HadoopVersion % dependencyScope,
-  "org.apache.hadoop" % "hadoop-common" % HadoopVersion % dependencyScope
+  "org.apache.hadoop" % "hadoop-common" % HadoopVersion % dependencyScope,
+  "com.amazonaws" % "aws-java-sdk-bom" % "1.11.703",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.703"
 )

@@ -1,3 +1,7 @@
+package fr.telecom
+
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -9,11 +13,15 @@ object Context {
 
   val outputPath = "/tmp/bigdata/"
 
-  val refYear = "2019"
+  val refYear  = "2019"
   val refMonth = "12"
+  val refDay   = "15"
 
-  def refPeriod : String = {
-    refYear + refMonth
+  def refPeriod(sep: String = "") : String = {
+    if(refDay.isEmpty)
+      Seq(refYear, refMonth).mkString(sep)
+    else
+      Seq(refYear, refMonth, refDay).mkString(sep)
   }
 
   // Create and config a Spark session
@@ -43,6 +51,10 @@ object Context {
       .getOrCreate()
 
     sparkSession
+  }
+
+  def getS3(): AmazonS3 = {
+    AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
   }
 }
 
