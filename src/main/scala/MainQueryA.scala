@@ -3,7 +3,7 @@ package fr.telecom
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 
-object Explore1 extends App {
+object MainQueryA extends App {
 
   // Select files corresponding to reference period (as set in Context.scala)
   val spark = Context.createSession()
