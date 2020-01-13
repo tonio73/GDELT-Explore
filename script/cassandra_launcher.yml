@@ -1,0 +1,80 @@
+---
+- hosts: localhost
+  remote_user: root
+  tasks:
+    - name: Launch cassandra cluster
+      command: aws2 emr create-cluster --name "cassandra-cluster" --release-label emr-5.28.0 --applications Name=Hadoop --ec2-attributes KeyName=gdeltKeyPair-educate --instance-type m4.large --instance-count 3 --use-default-roles
+      # command: echo j-12KA1WQ6ZXF0G
+      register: cassandra_cluster_id
+
+    - name: Wait for cassandra cluster running state
+      command: aws2 emr wait cluster-running --cluster-id "{{ cassandra_cluster_id.stdout}}"
+
+    - name: Get Public dns node 0
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[0].PublicDnsName
+      register: public_dns_node_0
+
+    - name: Save private ip adress node 0
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[0].PrivateIpAddress
+      register: private_ip_adress_node_0
+
+    - name: Get Public dns node 1
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[1].PublicDnsName
+      register: public_dns_node_1
+
+    - name: Save private ip adress node 1
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[1].PrivateIpAddress
+      register: private_ip_adress_node_1
+
+    - name: Get Public dns node 2
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[2].PublicDnsName
+      register: public_dns_node_2
+
+    - name: Save private ip adress node 2
+      command: aws2 emr list-instances --cluster-id "{{ cassandra_cluster_id.stdout }}" --query Instances[2].PrivateIpAddress
+      register: private_ip_adress_node_2
+
+    - name: Update apt repo node 0
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_0.stdout }}" sudo yum update -y
+
+    - name: Install docker node 0
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_0.stdout }}" sudo yum install docker -y
+
+    - name: Launch docker service node 0
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_0.stdout }}" sudo service docker start
+
+    - name: Add hadoop user to docker group node 0
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_0.stdout }}" sudo usermod -aG docker hadoop
+
+    - name: Launch Cassandra docker node 0
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_0.stdout }}" docker run --name cassandra-node -d -e CASSANDRA_BROADCAST_ADDRESS="{{ private_ip_adress_node_0.stdout }}" -p 7000:7000 -p 9042:9042 cassandra
+
+    - name: Update apt repo node 1
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_1.stdout }}" sudo yum update -y
+
+    - name: Install docker node 1
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_1.stdout }}" sudo yum install docker -y
+
+    - name: Launch docker service node 1
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_1.stdout }}" sudo service docker start
+
+    - name: Add hadoop user to docker group node 1
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_1.stdout }}" sudo usermod -aG docker hadoop
+
+    - name: Launch Cassandra docker node 1
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_1.stdout }}" docker run --name cassandra-node -d -e CASSANDRA_SEEDS="{{ private_ip_adress_node_0.stdout }}" -e CASSANDRA_BROADCAST_ADDRESS="{{ private_ip_adress_node_1.stdout }}" -p 7000:7000 -p 9042:9042 cassandra
+
+    - name: Update apt repo node 2
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_2.stdout }}" sudo yum update -y
+
+    - name: Install docker node 2
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_2.stdout }}" sudo yum install docker -y
+
+    - name: Launch docker service node 2
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_2.stdout }}" sudo service docker start
+
+    - name: Add hadoop user to docker group node 2
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_2.stdout }}" sudo usermod -aG docker hadoop
+
+    - name: Launch Cassandra docker node 2
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_node_2.stdout }}" docker run --name cassandra-node -d -e CASSANDRA_SEEDS="{{ private_ip_adress_node_0.stdout }}" -e CASSANDRA_BROADCAST_ADDRESS="{{ private_ip_adress_node_2.stdout }}" -p 7000:7000 -p 9042:9042 cassandra
