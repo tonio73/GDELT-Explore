@@ -37,7 +37,7 @@ case class Mention(
                   )
 
 object Mention {
-  def rddTods(spark: SparkSession, mentionsRdd: RDD[String]): Dataset[Mention] = {
+  def rddToDs(spark: SparkSession, mentionsRdd: RDD[String]): Dataset[Mention] = {
 
     import spark.implicits._
 

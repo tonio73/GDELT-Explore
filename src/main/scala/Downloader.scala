@@ -4,14 +4,12 @@ import java.io.{BufferedReader, File, InputStreamReader}
 import java.net.{HttpURLConnection, URL}
 import java.util.zip.ZipInputStream
 
-import sys.process._
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3._
-import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.s3.AmazonS3
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
+
+import scala.sys.process._
 
 // Handle data download (from GDELT)
 object Downloader {
