@@ -2,7 +2,7 @@ package fr.telecom
 
 import org.apache.spark.sql.{Dataset, Row}
 
-object MainDownload {
+object MainDownload extends  App {
 
   if (true) {
     // Download indexes (master files) to /tmp/data
