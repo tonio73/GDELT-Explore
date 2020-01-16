@@ -35,15 +35,46 @@ $ git clone https://github.com/tonio73/GDELT-Explore.git
 $ mkdir GDELT-Explore/secrets && cp [path_to_pem] secrets/gdeltKeyPair-educate.pem
 ```
 
-__Launch the platform__
+__Use the gdelt cli__
 
 ```shell script
-$ cd GDELT-Explore/script
-$ ansible-playbook cassandra_launcher.yml
-$ ansible-playbook spark_launcher.yml
+$ cd GDELT-Explore/
+$ pip install -r requirements.txt
 ```
 
-Wait until the clusters are created.
+In the `python/src` folder, there is a `gdelt.py` file which contains the cli for the project. This cli provide options 
+to:
+- Create the ec2 instances for the cluster
+- Create the EBS volumes make cassandra data persistent
+- Attach a volume to an ec2 instance
+- Deploy a cassandra container on many ec2 instances
+
+To get some help, run the following command:
+
+````shell script
+$ python gdelt.py --help
+````
+Create a cassandra cluster:
+
+````shell script
+$ python gdelt.py --create_cluster cassandra
+````
+Create the volumes:
+
+````shell script
+$ python gdelt.py --create_volume 3 [availability zone of the cluster]
+````
+Attach a volume (A volume need to be format when you use it for the first time):
+
+````shell script
+$ python gdelt.py --attach_volume --first_time [instance_id] [volume_id]
+````
+
+Deploy cassandra nodes
+
+````shell script
+$ python gdelt.py --deploy_cassandra [instance_id_1] [instance_id_2] ... [instance_id_n]
+````
 
 ## Connect to the cassandra cluster
 
