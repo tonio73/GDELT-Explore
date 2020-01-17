@@ -11,7 +11,7 @@ object Context {
   // Path to data
   val dataPath = "/tmp/data/" // System.getProperty("user.dir") + "/data"
 
-  val outputPath = "/tmp/bigdata/"
+  val outputPath = "/home/axel/workspace/GDELT-Explore/data"
 
   val refYear  = "2019"
   val refMonth = "12"
