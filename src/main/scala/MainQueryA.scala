@@ -2,6 +2,8 @@ package fr.telecom
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions.Window
 
 object MainQueryA extends App {
 
@@ -22,7 +24,20 @@ object MainQueryA extends App {
   // Request a) afficher le nombre d’articles/évènements qu’il y a eu pour chaque triplet (jour, pays de l’évènement, langue de l’article).
   println("Launch request a)")
 
-  val reqA = eventsDs.as("events").join(mentionsDs.as("mentions"), $"events.GLOBALEVENTID" === $"mentions.GLOBALEVENTID", joinType="left" ).
+  /* Codebook : "It also makes it possible to identify the “best” news report to return for a given event
+      (filtering all mentions of an event for those with the highest Confidence scores, most prominent positioning
+      within the article, and/or in a specific source language – such as Arabic coverage of a protest versus English coverage of that protest)."
+   */
+  // Using Window function to extract the mention with the best confidence
+  // https://databricks.com/blog/2015/07/15/introducing-window-functions-in-spark-sql.html
+  // https://sparkbyexamples.com/spark/spark-dataframe-how-to-select-the-first-row-of-each-group/
+  val w2 = Window.partitionBy("GLOBALEVENTID").orderBy(desc("Confidence"))
+  val bestMentionsDs = mentionsDs.withColumn("row", row_number.over(w2))
+    .where($"row" === 1).drop("row")
+
+  val reqA = eventsDs.as("events").join(bestMentionsDs.as("mentions"),
+    $"events.GLOBALEVENTID" === $"mentions.GLOBALEVENTID",
+    joinType = "left").
     groupBy("SQLDATE", "ActionGeo_CountryCode", "SRCLC").
     count()
 
