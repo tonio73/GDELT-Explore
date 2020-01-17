@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MainDownload + index" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="fr.telecom.MainDownload" />
+    <module name="mainRunner" />
+    <option name="PROGRAM_PARAMETERS" value="--index" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

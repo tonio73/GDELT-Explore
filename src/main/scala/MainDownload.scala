@@ -18,7 +18,7 @@ object MainDownload {
 
         case _ => {
           print("Unknown argument " + args(i) + "\n")
-          print("Usage: --index\n")
+          print("Usage: --index to download master files\n")
         }
       }
     }
@@ -29,8 +29,8 @@ object MainDownload {
       Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
         Context.dataPath + "/masterfilelist.txt") // save the list file to local
 
-      Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
-        Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
+    //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
+    //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
     }
 
     // Select files corresponding to reference period (as set in Context.scala)
