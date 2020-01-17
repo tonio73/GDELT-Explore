@@ -4,7 +4,7 @@ import org.apache.spark.sql.{Dataset, Row}
 
 object MainDownload extends  App {
 
-  if (true) {
+  if (false) {
     // Download indexes (master files) to /tmp/data
 
     Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
