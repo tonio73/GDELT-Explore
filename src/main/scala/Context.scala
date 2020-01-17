@@ -5,6 +5,12 @@ import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import com.datastax.spark.connector._
+
+/*
+Ressources :
+- https://www.datastax.com/blog/2015/01/kindling-introduction-spark-cassandra-part-1
+ */
 
 object Context {
 
@@ -25,7 +31,7 @@ object Context {
   }
 
   // Create and config a Spark session
-  def createSession(): SparkSession = {
+  def createSession(cassandraServerIp: String = ""): SparkSession = {
     val conf = new SparkConf().setAll(Map(
       "spark.scheduler.mode" -> "FIFO",
       "spark.speculation" -> "false",
@@ -38,6 +44,10 @@ object Context {
       "spark.driver.maxResultSize" -> "2g",
       "spark.driver-memory" ->  "10g"
     ))
+
+    if(! cassandraServerIp.isEmpty()) {
+      conf.set("spark.cassandra.connection.host", cassandraServerIp)
+    }
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)

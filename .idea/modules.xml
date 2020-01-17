@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GDELT-Explore.iml" filepath="$PROJECT_DIR$/.idea/modules/GDELT-Explore.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GDELT-Explore-build.iml" filepath="$PROJECT_DIR$/.idea/modules/GDELT-Explore-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/mainRunner/mainRunner.iml" filepath="$PROJECT_DIR$/.idea/mainRunner/mainRunner.iml" />
     </modules>
   </component>
 </project>
