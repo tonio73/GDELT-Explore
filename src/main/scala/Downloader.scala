@@ -14,11 +14,11 @@ import scala.sys.process._
 // Handle data download (from GDELT)
 object Downloader {
   def fileDownloader(urlOfFileToDownload: String, fileName: String) = {
-    val url = new URL(urlOfFileToDownload)
-    val connection = url.openConnection().asInstanceOf[HttpURLConnection]
-    connection.setConnectTimeout(5000)
-    connection.setReadTimeout(5000)
-    connection.connect()
+      val url = new URL(urlOfFileToDownload)
+      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      connection.setConnectTimeout(5000)
+      connection.setReadTimeout(5000)
+      connection.connect()
 
     if (connection.getResponseCode >= 400)
       println("error")
