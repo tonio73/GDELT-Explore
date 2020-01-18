@@ -12,14 +12,17 @@ object MainDownload {
     // Command line args
     var downloadIndex = false
     var downloadData = true
+    var saveToS3 = false
     var i: Int = 0
     while (i < args.length) {
       args(i) match {
         case "--index" => downloadIndex = true
         case "--index-only" => {
           downloadIndex = true
-          downloadData  = false
+          downloadData = false
         }
+
+        case "--to-s3" => saveToS3 = true
 
         case _ => {
           print("Unknown argument " + args(i) + "\n")
@@ -29,52 +32,64 @@ object MainDownload {
       i += 1
     }
 
-    val masterFile = Context.dataPath + "/masterfilelist.txt"
 
     try {
+
       if (downloadIndex) {
         // Download indexes (master files) to /tmp/data
 
         logger.info("Start downloading materfilelist.txt")
 
-        Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
-          masterFile) // save the list file to local
+        // save the list file to local
+        val msPath = Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
+          "masterfilelist.txt", saveToS3)
 
         logger.info("End downloading materfilelist.txt")
 
         //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
         //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
+        msPath
       }
 
-      // Select files corresponding to reference period (as set in Context.scala)
-      val spark = Context.createSession()
+      val masterFilePath = if (saveToS3) "s3://" + Context.bucketName + "/" + Context.bucketDataPath + "/masterfilelist.txt"
+      else Context.dataPath + "/masterfilelist.txt"
 
-      import spark.implicits._
+      if (downloadData) {
 
-      // List all files related to the reference period from the master file
-      val selectedFiles: Dataset[Row] = spark.sqlContext.read.
-        option("delimiter", " ").
-        option("infer_schema", "true").
-        csv(masterFile).
-        withColumnRenamed("_c2", "url").
-        // Filter on period
-        filter($"url" contains "/" + Context.refPeriod()).
-        repartition(200)
+        logger.info("Setup spark session")
 
-      logger.info("Start downloading selection on reference period %s, total count = %d".format(Context.refPeriod("-"), selectedFiles.count))
+        // Select files corresponding to reference period (as set in Context.scala)
+        val spark = Context.createSession()
 
-      // Download all files related to the reference period
-      Downloader.downloadSelection(selectedFiles)
+        import spark.implicits._
 
-      logger.info("End downloading selection")
+        // List all files related to the reference period from the master file
+        val selectedFiles: Dataset[Row] = spark.sqlContext.read.
+          option("delimiter", " ").
+          option("infer_schema", "true").
+          csv(masterFilePath).
+          withColumnRenamed("_c2", "url").
+          // Filter on period
+          filter($"url" contains "/" + Context.refPeriod()).
+          repartition(200)
+
+        logger.info("Start downloading selection on reference period %s, total count = %d".format(Context.refPeriod("-"), selectedFiles.count))
+
+        // Download all files related to the reference period
+        Downloader.downloadSelection(selectedFiles, saveToS3)
+
+        logger.info("End downloading selection")
+      }
     }
     catch {
-      // The call was transmitted successfully, but Amazon S3 couldn't process
+      // The call was transmitted successfully, but AWS couldn't process
       // it, so it returned an error response.
       case e: AmazonServiceException => e.printStackTrace();
-      // Amazon S3 couldn't be contacted for a response, or the client
+      // AWS couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.
       case e: SdkClientException => e.printStackTrace();
     }
+
+    logger.info("Fu-fu program completed")
   }
 }

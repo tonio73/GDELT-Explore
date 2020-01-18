@@ -21,6 +21,10 @@ object Context {
 
   val bucketName = "fufu-program"
 
+  val bucketDataPath = "data/"
+
+  val bucketOutputPath = "bigdata"
+
   val refYear  = "2019"
   val refMonth = "12"
   val refDay   = "15"
@@ -58,15 +62,17 @@ object Context {
     val sparkSession = SparkSession
       .builder
       .config(conf)
-      .master("local[1]")
       .appName("GDELT-ETL")
+      //.master("local[4]")
       .getOrCreate()
 
     sparkSession
   }
 
   def getS3(): AmazonS3 = {
-    AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+    AmazonS3ClientBuilder.standard()
+      .withRegion(Regions.US_EAST_1)
+      .build()
   }
 
   // Log43 logger for the application

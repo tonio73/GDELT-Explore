@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 
 import com.amazonaws.{AmazonServiceException, SdkClientException}
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 
@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest
 object MainTestS3 extends App {
 
   try {
-    val s3Client = AmazonS3ClientBuilder.standard()
+    val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard()
       .withRegion(Regions.US_EAST_1)
       .build();
 
