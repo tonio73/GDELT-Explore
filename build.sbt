@@ -10,8 +10,8 @@ lazy val root = (project in file(".")).
     publishMavenStyle := true
   )
 
-val SparkVersion = "2.4.0"
-val SparkCompatibleVersion = "2.3"
+val SparkVersion = "2.4.4"
+val SparkCompatibleVersion = "2.4"
 val HadoopVersion = "2.7.2"
 
 val AwsVersion = "1.11.703"

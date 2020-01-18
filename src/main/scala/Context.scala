@@ -19,6 +19,8 @@ object Context {
 
   val outputPath = "/tmp/bigdata/"
 
+  val bucketName = "fufu-program"
+
   val refYear  = "2019"
   val refMonth = "12"
   val refDay   = "15"

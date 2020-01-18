@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "Submit Main download to the EMR Spark cluster",
+    "Type":"CUSTOM_JAR",
+    "Jar":"command-runner.jar",
+    "Args":
+    [
+      "spark-submit",
+      "--deploy-mode", "cluster",
+      "--class", "fr.telecom.MainDownload",
+      "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar",
+      "--index"
+    ],
+    "ActionOnFailure": "CONTINUE"
+  }
+]
