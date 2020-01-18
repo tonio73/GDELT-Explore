@@ -56,8 +56,8 @@ object Context {
     val sparkSession = SparkSession
       .builder
       .config(conf)
-      .master("local[5]")
-      .appName("TP Spark : Trainer")
+      .master("local[1]")
+      .appName("GDELT-ETL")
       .getOrCreate()
 
     sparkSession
@@ -65,6 +65,11 @@ object Context {
 
   def getS3(): AmazonS3 = {
     AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+  }
+
+  // Log43 logger for the application
+  def logger() = {
+    Logger.getLogger(this.getClass.getPackage.getName)
   }
 }
 

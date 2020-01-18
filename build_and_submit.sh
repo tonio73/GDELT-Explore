@@ -17,6 +17,7 @@ sbt assembly || { echo 'Build failed' ; exit 1; }
 
 echo -e "\n --- spark-submit --- \n"
 
-sparkSubmit="spark-submit"
+if [ -z "${SPARK_HOME+x}" ]; then sparkSubmit="spark-submit"; else sparkSubmit="$SPARK_HOME/bin/spark-submit"; fi
+
 
 $sparkSubmit --conf spark.eventLog.enabled=true --conf spark.eventLog.dir="/tmp" --driver-memory 10g --class fr.telecom.$1 target/scala-2.11/*.jar "${@:2}"

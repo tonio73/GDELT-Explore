@@ -138,6 +138,11 @@ All the JAR dependencies are installed automatically through SBT
 3. When first loading the project IntelliJ, the SBT files shall be imported
 4. When pulling source code update from Github, it might be required to reload the SBT file
 
+## Configuration
+
+- Logging configured in src/main/resources/log4j.properties
+  - Currently to console (TO COMPLETE)
+
 ## Build ETL programs
 
 Either :

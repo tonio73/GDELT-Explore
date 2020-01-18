@@ -6,31 +6,37 @@ object MainDownload {
 
   def main(args: Array[String]): Unit = {
 
-    var downLoadIndex = false
+    val logger = Context.logger
 
     // Command line args
+    var downLoadIndex = false
     var i: Int = 0
     while (i < args.length) {
       args(i) match {
         case "--index" => downLoadIndex = true
-
-        case "target.*\\.jar" => {/* ignore */}
 
         case _ => {
           print("Unknown argument " + args(i) + "\n")
           print("Usage: --index to download master files\n")
         }
       }
+      i += 1
     }
+
+    val masterFile = Context.dataPath + "/masterfilelist.txt"
 
     if (downLoadIndex) {
       // Download indexes (master files) to /tmp/data
 
-      Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
-        Context.dataPath + "/masterfilelist.txt") // save the list file to local
+      logger.info("Start downloading materfilelist.txt")
 
-    //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
-    //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
+      Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
+        masterFile) // save the list file to local
+
+      logger.info("End downloading materfilelist.txt")
+
+      //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
+      //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
     }
 
     // Select files corresponding to reference period (as set in Context.scala)
@@ -42,16 +48,17 @@ object MainDownload {
     val selectedFiles: Dataset[Row] = spark.sqlContext.read.
       option("delimiter", " ").
       option("infer_schema", "true").
-      csv(Context.dataPath + "/masterfilelist.txt").
+      csv(masterFile).
       withColumnRenamed("_c2", "url").
       // Filter on period
       filter($"url" contains "/" + Context.refPeriod()).
       repartition(200)
 
-    println("File count for " + Context.refPeriod("-") + " = " + selectedFiles.count)
+    logger.info("Start downloading selection on reference period %s, total count = %d".format(Context.refPeriod("-"), selectedFiles.count))
 
     // Download all files related to the reference period
-    println("Download all files related to the reference period")
     Downloader.downloadSelection(selectedFiles)
+
+    logger.info("End downloading selection")
   }
 }

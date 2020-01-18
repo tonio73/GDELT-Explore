@@ -1,11 +1,12 @@
 import sbt.Keys._ //{libraryDependencies, version}
 
+ThisBuild / organization := "fr.telecom"
+ThisBuild / scalaVersion := "2.11.11"
+
 lazy val root = (project in file(".")).
   settings(
     name := "GDELT-Explore",
     version := "0.1.0",
-    scalaVersion := "2.11.11",
-    organization := "fr.telecom",
     publishMavenStyle := true
   )
 
@@ -23,13 +24,14 @@ lazy val sparkDependencies = Seq(
   "org.apache.spark" %% "spark-core" % SparkVersion,
   "org.apache.spark" %% "spark-sql" % SparkVersion,
   "org.apache.hadoop" % "hadoop-mapreduce-client-core" % HadoopVersion,
-  "org.apache.hadoop" % "hadoop-common" % HadoopVersion,
+  "org.apache.hadoop" % "hadoop-common" % HadoopVersion
 )
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-bom" % AwsVersion,
   "com.amazonaws" % "aws-java-sdk-s3" % AwsVersion,
-  "com.datastax.spark" %% "spark-cassandra-connector" % SparkCassandraVersion
+  "com.datastax.spark" %% "spark-cassandra-connector" % SparkCassandraVersion,
+  "log4j" % "log4j" % "1.2.17"
 )
 
 // When building assembly to be submitted to Spark, do not include the Spark libs in the Jar

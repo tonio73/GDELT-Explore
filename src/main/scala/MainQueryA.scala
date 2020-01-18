@@ -7,6 +7,8 @@ import org.apache.spark.sql.expressions.Window
 
 object MainQueryA extends App {
 
+  val logger = Context.logger
+
   // Select files corresponding to reference period (as set in Context.scala)
   val spark = Context.createSession()
 
@@ -22,9 +24,9 @@ object MainQueryA extends App {
   // println("For %s, number of events = %d, number of mentions = %d".format(Context.refPeriod(), eventsDs.count(), mentionsDs.count()))
 
   // Request a) afficher le nombre d’articles/évènements qu’il y a eu pour chaque triplet (jour, pays de l’évènement, langue de l’article).
-  println("Launch request a)")
+  logger.info("Launch request a)")
 
-  /* Codebook : "It also makes it possible to identify the “best” news report to return for a given event
+  /* GDELT Codebook : "It also makes it possible to identify the “best” news report to return for a given event
       (filtering all mentions of an event for those with the highest Confidence scores, most prominent positioning
       within the article, and/or in a specific source language – such as Arabic coverage of a protest versus English coverage of that protest)."
    */
@@ -44,7 +46,7 @@ object MainQueryA extends App {
   // Currently to CSV, later to Cassandra
   reqA.write.mode("overwrite").csv(Context.outputPath + "/reqA_csv")
 
-  println("Completed write of request a)")
+  logger.info("Completed write of request a)")
 
   /*
   eventsDs.createOrReplaceTempView("export")
@@ -66,6 +68,4 @@ object MainQueryA extends App {
     FROM export GROUP BY SQLDATE
     """).write.mode("overwrite").csv(Context.outputPath + "/reqTest3_csv")
    */
-
-  println("Program completed")
 }
