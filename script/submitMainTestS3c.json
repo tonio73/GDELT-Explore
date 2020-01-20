@@ -6,11 +6,9 @@
     "Args":
     [
       "spark-submit",
-      "--deploy-mode", "cluster",
-      "--class", "fr.telecom.MainDownload",
-      "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar",
-      "--index",
-      "--to-s3"
+      "--deploy-mode", "client",
+      "--class", "fr.telecom.MainTestS3c",
+      "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar"
     ],
     "ActionOnFailure": "CONTINUE"
   }
