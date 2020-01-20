@@ -13,6 +13,7 @@ object MainDownload {
     var downloadIndex = false
     var downloadData = true
     var saveToS3 = false
+    var localMaster = false
     var i: Int = 0
     while (i < args.length) {
       args(i) match {
@@ -21,6 +22,8 @@ object MainDownload {
           downloadIndex = true
           downloadData = false
         }
+
+        case "--local-master" => localMaster = true
 
         case "--to-s3" => saveToS3 = true
 
@@ -59,7 +62,7 @@ object MainDownload {
         logger.info("Setup spark session")
 
         // Select files corresponding to reference period (as set in Context.scala)
-        val spark = Context.createSession()
+        val spark = Context.createSession(localMaster)
 
         import spark.implicits._
 

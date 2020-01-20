@@ -57,9 +57,11 @@ object Downloader {
   }
 
   // Extract Zipped files into a RDD
-  def zipsToRdd(spark: SparkSession, filePattern: String, filePath: String = Context.dataPath): RDD[String] = {
+  def zipsToRdd(spark: SparkSession, filePattern: String, fromS3: Boolean): RDD[String] = {
 
-    spark.sparkContext.binaryFiles(filePath + "/" + filePattern, 100).
+    var path = if (fromS3) Context.getS3Path(Context.bucketDataPath) else Context.dataPath
+
+    spark.sparkContext.binaryFiles(path + filePattern).
       flatMap { // uncompress zip
         case (name: String, content: PortableDataStream) =>
 

@@ -6,11 +6,10 @@ import sys
 import os
 import boto3
 
-project_path = Path.cwd().parent.parent
-src_path = project_path / 'python' / 'src'
+project_path = Path.cwd().parent
 script_path = project_path / 'script'
 secrets_path = project_path / 'secrets'
-sys.path.append(src_path)
+sys.path.append(script_path)
 
 
 def create_volume(availability_zone):
@@ -70,7 +69,7 @@ def run_cassandra_container(instance_id, first_node=None):
 
 
 if __name__ == '__main__':
-    playbook_file = dict(spark=str(script_path / 'spark.yml'), cassandra=str(script_path / 'cassandra.yml'))
+    playbook_file = dict(spark=str('spark.yml'), cassandra=str('cassandra.yml'))
     parser = argparse.ArgumentParser()
     parser.add_argument('params', nargs='*', help='list of parameters')
     parser.add_argument('--create_cluster', dest='create_cluster', action='store_true',

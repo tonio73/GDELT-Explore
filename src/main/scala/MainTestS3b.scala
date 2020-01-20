@@ -1,8 +1,5 @@
 package fr.telecom
 
-import java.net.{HttpURLConnection, URL}
-
-import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.{AmazonServiceException, SdkClientException}
 
 // Test access to S3

@@ -12,16 +12,33 @@ object MainQueryA extends App {
 
   try {
 
+    var localMaster = false
+    var fromS3 = false
+    var i: Int = 0
+    while (i < args.length) {
+      args(i) match {
+        case "--local-master" => localMaster = true
+
+        case "--from-s3" => fromS3 = true
+
+        case _ => {
+          print("Unknown argument " + args(i) + "\n")
+          print("Usage: --index to download master files\n")
+        }
+      }
+      i += 1
+    }
+
     logger.info("Create Spark session")
 
     // Select files corresponding to reference period (as set in Context.scala)
-    val spark = Context.createSession()
+    val spark = Context.createSession(localMaster)
 
     import spark.implicits._
 
     // Read GDELT compressed CSV (currently from /tmp/data, later from S3)
-    val eventsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "[0-9]*.export.CSV.zip")
-    val mentionsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "[0-9]*.mentions.CSV.zip")
+    val eventsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "*.export.CSV.zip", fromS3)
+    val mentionsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "*.mentions.CSV.zip", fromS3)
 
     val eventsDs: Dataset[Event] = Event.rddToDs(spark, eventsRDD)
     val mentionsDs: Dataset[Mention] = Mention.rddToDs(spark, mentionsRDD)
@@ -49,7 +66,12 @@ object MainQueryA extends App {
       count()
 
     // Currently to CSV, later to Cassandra
-    reqA.write.mode("overwrite").csv(Context.outputPath + "/reqA_csv")
+    if(fromS3) {
+      reqA.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "reqA_csv"))
+    }
+    else {
+      reqA.write.mode("overwrite").csv(Context.outputPath + "reqA_csv")
+    }
 
     logger.info("Completed write of request a)")
 
