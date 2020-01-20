@@ -3,12 +3,8 @@
   remote_user: root
   tasks:
     - name: Launch spark cluster
-      command: aws2 emr create-cluster --name "Spark cluster" --release-label emr-5.28.0 --applications Name=Spark --ec2-attributes KeyName=gdeltKeyPair-educate --instance-type m4.large --instance-count 3 --use-default-roles
+      command: aws2 emr create-cluster --name "Spark cluster" --release-label emr-5.28.0 --applications Name=Spark Name=Zeppelin Name=Hadoop --ec2-attributes KeyName=gdeltKeyPair-educate --instance-type m4.large --instance-count 3 --use-default-roles --log s3://fufu-program/logs
       register: spark_cluster_id
-
-    - name: Launch cassandra cluster
-      command: aws2 emr create-cluster --name "Cassandra cluster" --release-label emr-5.28.0 --applications Name=Hadoop --ec2-attributes KeyName=gdeltKeyPair-educate --instance-type m4.large --instance-count 3 --use-default-roles
-      register: cassandra_cluster_id
 
     - name: Wait for spark cluster running state
       command: aws2 emr wait cluster-running --cluster-id "{{ spark_cluster_id.stdout }}"

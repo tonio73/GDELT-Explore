@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from pathlib import Path
 import sys
@@ -39,7 +41,7 @@ def attach_volume(volume_id, instance_id, first_time=False):
     os.system("ssh -o StrictHostKeyChecking=no -i {} hadoop@{} sudo mount /dev/sdm /cassandra/data".format(
         secrets_path / 'gdeltKeyPair-educate.pem',
         public_dns_instance))
-    print(f"Succesfully attached {volume_id} volume to {instance_id} instance!")
+    print(f"Successfully attached {volume_id} volume to {instance_id} instance!")
     return
 
 

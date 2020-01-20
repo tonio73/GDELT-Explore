@@ -5,6 +5,12 @@ import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import com.datastax.spark.connector._
+
+/*
+Ressources :
+- https://www.datastax.com/blog/2015/01/kindling-introduction-spark-cassandra-part-1
+ */
 
 object Context {
 
@@ -12,6 +18,12 @@ object Context {
   val dataPath = "/tmp/data/" // System.getProperty("user.dir") + "/data"
 
   val outputPath = "/home/axel/workspace/GDELT-Explore/data"
+
+  val bucketName = "fufu-program"
+
+  val bucketDataPath = "data/"
+
+  val bucketOutputPath = "bigdata"
 
   val refYear  = "2019"
   val refMonth = "12"
@@ -25,7 +37,7 @@ object Context {
   }
 
   // Create and config a Spark session
-  def createSession(): SparkSession = {
+  def createSession(cassandraServerIp: String = ""): SparkSession = {
     val conf = new SparkConf().setAll(Map(
       "spark.scheduler.mode" -> "FIFO",
       "spark.speculation" -> "false",
@@ -39,6 +51,10 @@ object Context {
       "spark.driver-memory" ->  "10g"
     ))
 
+    if(! cassandraServerIp.isEmpty()) {
+      conf.set("spark.cassandra.connection.host", cassandraServerIp)
+    }
+
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
     Logger.getLogger("io.netty").setLevel(Level.WARN)
@@ -46,15 +62,22 @@ object Context {
     val sparkSession = SparkSession
       .builder
       .config(conf)
-      .master("local[5]")
-      .appName("TP Spark : Trainer")
+      .appName("GDELT-ETL")
+      //.master("local[4]")
       .getOrCreate()
 
     sparkSession
   }
 
   def getS3(): AmazonS3 = {
-    AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build()
+    AmazonS3ClientBuilder.standard()
+      .withRegion(Regions.US_EAST_1)
+      .build()
+  }
+
+  // Log43 logger for the application
+  def logger() = {
+    Logger.getLogger(this.getClass.getPackage.getName)
   }
 }
 
