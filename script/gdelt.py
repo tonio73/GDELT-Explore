@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import os
 import boto3
+import time
 
 project_path = Path.cwd().parent
 script_path = project_path / 'script'
@@ -51,20 +52,22 @@ def run_cassandra_container(instance_id, first_node=None):
     private_ip_address = client.describe_instances(InstanceIds=[instance_id])['Reservations'][0] \
         ['Instances'][0]['NetworkInterfaces'][0]['PrivateIpAddress']
     if first_node is None:
-        os.system(
-            "ssh -o StrictHostKeyChecking=no -i {} hadoop@{} docker run --name cassandra-node -d -v /cassandra/data:/var/lib/cassandra -e CASSANDRA_BROADCAST_ADDRESS={} -p 7000:7000 -p 9042:9042 cassandra".format(
-                secrets_path / 'gdeltKeyPair-educate.pem',
-                public_dns_instance,
-                private_ip_address))
+        command = "ssh -o StrictHostKeyChecking=no -i {} hadoop@{} docker run --name cassandra-node -d -v /cassandra/data:/var/lib/cassandra -e CASSANDRA_BROADCAST_ADDRESS={} -p 7000:7000 -p 9042:9042 cassandra".format(
+            secrets_path / 'gdeltKeyPair-educate.pem',
+            public_dns_instance,
+            private_ip_address)
+        print('Run {}'.format(command))
+        os.system(command)
     else:
-        private_ip_address_first_node = client.describe_instances(InstanceIds=[instance_id])['Reservations'][0] \
+        private_ip_address_first_node = client.describe_instances(InstanceIds=[first_node])['Reservations'][0] \
             ['Instances'][0]['NetworkInterfaces'][0]['PrivateIpAddress']
-        os.system(
-            "ssh -o StrictHostKeyChecking=no -i {} hadoop@{} docker run --name cassandra-node -d -v /cassandra/data:/var/lib/cassandra -e CASSANDRA_SEEDS={} -e CASSANDRA_BROADCAST_ADDRESS={} -p 7000:7000 -p 9042:9042 cassandra".format(
-                secrets_path / 'gdeltKeyPair-educate.pem',
-                public_dns_instance,
-                private_ip_address_first_node,
-                private_ip_address))
+        command = "ssh -o StrictHostKeyChecking=no -i {} hadoop@{} docker run --name cassandra-node -d -v /cassandra/data:/var/lib/cassandra -e CASSANDRA_SEEDS={} -e CASSANDRA_BROADCAST_ADDRESS={} -p 7000:7000 -p 9042:9042 cassandra".format(
+            secrets_path / 'gdeltKeyPair-educate.pem',
+            public_dns_instance,
+            private_ip_address_first_node,
+            private_ip_address)
+        print('Run {}'.format(command))
+        os.system(command)
     print(f"Succesfully run cassandra container on the {instance_id} instance!")
 
 
@@ -102,5 +105,6 @@ if __name__ == '__main__':
     elif args.deploy_cassandra:
         first_node = args.params.pop()
         run_cassandra_container(instance_id=first_node)
+        time.sleep(20)
         for instance_id in args.params:
             run_cassandra_container(instance_id, first_node)
