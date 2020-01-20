@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MainDownload" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="fr.telecom.MainDownload" />
+  <configuration default="false" name="MainTestS3c" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="fr.telecom.MainTestS3c" />
     <module name="mainRunner" />
     <option name="PROGRAM_PARAMETERS" value="--local-master" />
     <extension name="coverage">

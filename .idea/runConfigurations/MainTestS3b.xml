@@ -1,8 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MainDownload" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="fr.telecom.MainDownload" />
-    <module name="mainRunner" />
-    <option name="PROGRAM_PARAMETERS" value="--local-master" />
+  <configuration default="false" name="MainTestS3b" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="fr.telecom.MainTestS3b" />
+    <module name="GDELT-Explore" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="fr.telecom.*" />

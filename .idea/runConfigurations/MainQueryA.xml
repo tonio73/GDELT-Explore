@@ -2,6 +2,7 @@
   <configuration default="false" name="MainQueryA" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="fr.telecom.MainQueryA" />
     <module name="mainRunner" />
+    <option name="PROGRAM_PARAMETERS" value="--local-master" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="fr.telecom.*" />
