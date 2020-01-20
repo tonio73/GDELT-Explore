@@ -66,7 +66,12 @@ object MainQueryA extends App {
       count()
 
     // Currently to CSV, later to Cassandra
-    reqA.write.mode("overwrite").csv(Context.getS3Path(Context.outputPath + "reqA_csv"))
+    if(fromS3) {
+      reqA.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "reqA_csv"))
+    }
+    else {
+      reqA.write.mode("overwrite").csv(Context.outputPath + "reqA_csv")
+    }
 
     logger.info("Completed write of request a)")
 

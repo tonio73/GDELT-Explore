@@ -70,13 +70,7 @@ object Context {
       sparkSessionBuilder.master("local[4]")
     }
 
-    val spark = sparkSessionBuilder.getOrCreate()
-
-    // Increase number of max connections to S3 [2]
-    val hc = spark.sparkContext.hadoopConfiguration
-    hc.setInt("fs.s3.maxConnections", 1000)
-
-    spark
+    sparkSessionBuilder.getOrCreate()
   }
 
   def getS3(): AmazonS3 = {

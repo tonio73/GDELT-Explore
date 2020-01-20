@@ -63,15 +63,14 @@ $ git clone https://github.com/tonio73/GDELT-Explore.git
 $ mkdir GDELT-Explore/secrets && cp [path_to_pem] secrets/gdeltKeyPair-educate.pem
 ```
 
-__Use the gdelt cli__
+## Use the _gdelt_ cli
 
 ```shell script
 $ cd GDELT-Explore/
 $ pip install -r requirements.txt
 ```
 
-In the `python/src` folder, there is a `gdelt.py` file which contains the cli for the project. This cli provide options 
-to:
+In the  __script/__ folder, there is a  __gdelt.py__ script file which contains the cli for the project. This cli provides options to:
 - Create the ec2 instances for the cluster
 - Create the EBS volumes make cassandra data persistent
 - Attach a volume to an ec2 instance
@@ -80,28 +79,38 @@ to:
 To get some help, run the following command:
 
 ````shell script
-$ python gdelt.py --help
+$ ./gdelt.py --help
 ````
+## Create a spark cluster
+
+```sh
+$ ./gdelt.py --create_cluster spakr
+```
+
+Caveats:
+
+- The number of S3 connections need to be increased to at least 100, see sparkConfiguration.json and [1]
+
 ## Create a Cassandra cluster
 
 ````shell script
-$ python gdelt.py --create_cluster cassandra
+$ ./gdelt.py --create_cluster cassandra
 ````
 Create the volumes:
 
 ````shell script
-$ python gdelt.py --create_volume 3 [availability zone of the cluster]
+$ ./gdelt.py --create_volume 3 [availability zone of the cluster]
 ````
 Attach a volume (A volume need to be formatted when you use it for the first time):
 
 ````shell script
-$ python gdelt.py --attach_volume --first_time [instance_id] [volume_id]
+$ ./gdelt.py --attach_volume --first_time [instance_id] [volume_id]
 ````
 
 Deploy Cassandra nodes
 
 ````shell script
-$ python gdelt.py --deploy_cassandra [instance_id_1] [instance_id_2] ... [instance_id_n]
+$ ./gdelt.py --deploy_cassandra [instance_id_1] [instance_id_2] ... [instance_id_n]
 ````
 
 ## Connect to the cassandra cluster
@@ -167,6 +176,7 @@ Submit the job to Spark using add-steps on the EMR cluster, example for the GDEL
 
 ```sh
 $ aws emr add-steps --cluster-id [id starting with 'j-'] --steps file://script/submitMainDownload.json
+
 $ aws emr list-steps --cluster-id [id starting with 'j-']
 $ aws2 emr describe-step --cluster-id [id starting with 'j-'] --step-id [id starting with 's-']
 ```
@@ -280,3 +290,6 @@ spark-submit --class fr.telecom.MainQueryA target/scala-2.11/GDELT-Explore-assem
 CCC
 ```
 
+## References
+
+- [1] https://aws.amazon.com/fr/premiumsupport/knowledge-center/emr-timeout-connection-wait/
