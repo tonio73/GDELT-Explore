@@ -10,7 +10,8 @@
       "--class", "fr.telecom.MainDownload",
       "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar",
       "--index",
-      "--to-s3"
+      "--to-s3",
+      "--ref-period", "201904"
     ],
     "ActionOnFailure": "CONTINUE"
   }

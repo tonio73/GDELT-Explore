@@ -1,6 +1,7 @@
 package fr.telecom
 
 import com.amazonaws.{AmazonServiceException, SdkClientException}
+import fr.telecom.MainQueryB.args
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
@@ -14,12 +15,24 @@ object MainQueryA extends App {
 
     var localMaster = false
     var fromS3 = false
+    var cassandraIp = ""
+    var refPeriod = Context.refPeriod()
     var i: Int = 0
     while (i < args.length) {
       args(i) match {
         case "--local-master" => localMaster = true
 
         case "--from-s3" => fromS3 = true
+
+        case "--cassandra-ip" => {
+          i += 1
+          cassandraIp = args(i)
+        }
+
+        case "--ref-period" => {
+          i += 1
+          refPeriod = args(i)
+        }
 
         case _ => {
           print("Unknown argument " + args(i) + "\n")
@@ -32,18 +45,18 @@ object MainQueryA extends App {
     logger.info("Create Spark session")
 
     // Select files corresponding to reference period (as set in Context.scala)
-    val spark = Context.createSession(localMaster)
+    val spark = Context.createSession(localMaster, cassandraIp)
 
     import spark.implicits._
 
     // Read GDELT compressed CSV (currently from /tmp/data, later from S3)
-    val eventsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "*.export.CSV.zip", fromS3)
-    val mentionsRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "*.mentions.CSV.zip", fromS3)
+    val eventsRDD: RDD[String] = Downloader.zipsToRdd(spark, refPeriod + "*.export.CSV.zip", fromS3)
+    val mentionsRDD: RDD[String] = Downloader.zipsToRdd(spark, refPeriod + "*.mentions.CSV.zip", fromS3)
 
     val eventsDs: Dataset[Event] = Event.rddToDs(spark, eventsRDD)
     val mentionsDs: Dataset[Mention] = Mention.rddToDs(spark, mentionsRDD)
 
-    // println("For %s, number of events = %d, number of mentions = %d".format(Context.refPeriod(), eventsDs.count(), mentionsDs.count()))
+    // println("For %s, number of events = %d, number of mentions = %d".format(refPeriod, eventsDs.count(), mentionsDs.count()))
 
     // Request a) afficher le nombre d’articles/évènements qu’il y a eu pour chaque triplet (jour, pays de l’évènement, langue de l’article).
     logger.info("Launch request a)")
@@ -60,8 +73,7 @@ object MainQueryA extends App {
       .where($"row" === 1).drop("row")
 
     val reqA = eventsDs.as("events").join(bestMentionsDs.as("mentions"),
-      $"events.GLOBALEVENTID" === $"mentions.GLOBALEVENTID",
-      joinType = "left").
+      $"events.GLOBALEVENTID" === $"mentions.GLOBALEVENTID", joinType = "left").
       groupBy("SQLDATE", "ActionGeo_CountryCode", "SRCLC").
       count()
 
@@ -96,7 +108,7 @@ object MainQueryA extends App {
     // The call was transmitted successfully, but AWS couldn't process
     // it, so it returned an error response.
     case e: AmazonServiceException => e.printStackTrace();
-    // Amazon S3 couldn't be contacted for a response, or the client
+    // AWS couldn't be contacted for a response, or the client
     // couldn't parse the response from AWS.
     case e: SdkClientException => e.printStackTrace();
   }

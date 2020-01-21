@@ -67,7 +67,10 @@ object Downloader {
 
           val zis = new ZipInputStream(content.open)
           Stream.continually(zis.getNextEntry).
-            takeWhile(_ != null).
+            takeWhile {
+              case null => zis.close(); false
+              case _ => true
+            }.
             flatMap {
               _ =>
                 val br = new BufferedReader(new InputStreamReader(zis))

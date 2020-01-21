@@ -14,6 +14,7 @@ object MainDownload {
     var downloadData = true
     var saveToS3 = false
     var localMaster = false
+    var refPeriod = Context.refPeriod()
     var i: Int = 0
     while (i < args.length) {
       args(i) match {
@@ -27,9 +28,15 @@ object MainDownload {
 
         case "--to-s3" => saveToS3 = true
 
+        case "--ref-period" => {
+          i += 1
+          refPeriod = args(i)
+        }
+
         case _ => {
           print("Unknown argument " + args(i) + "\n")
           print("Usage: --index to download master files\n")
+          System.exit(1)
         }
       }
       i += 1
@@ -44,17 +51,16 @@ object MainDownload {
         logger.info("Start downloading materfilelist.txt")
 
         // save the list file to local
-        val msPath = Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
+        Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
           "masterfilelist.txt", saveToS3)
 
         logger.info("End downloading materfilelist.txt")
 
         //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
         //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
-        msPath
       }
 
-      val masterFilePath = if (saveToS3) "s3://" + Context.bucketName + "/" + Context.bucketDataPath + "/masterfilelist.txt"
+      val masterFilePath = if (saveToS3) Context.getS3Path(Context.bucketDataPath + "/masterfilelist.txt")
       else Context.dataPath + "/masterfilelist.txt"
 
       if (downloadData) {
@@ -73,10 +79,10 @@ object MainDownload {
           csv(masterFilePath).
           withColumnRenamed("_c2", "url").
           // Filter on period
-          filter($"url" contains "/" + Context.refPeriod()).
+          filter($"url" contains "/" + refPeriod).
           repartition(200)
 
-        logger.info("Start downloading selection on reference period %s, total count = %d".format(Context.refPeriod("-"), selectedFiles.count))
+        logger.info("Start downloading selection on reference period %s, total count = %d".format(refPeriod, selectedFiles.count))
 
         // Download all files related to the reference period
         Downloader.downloadSelection(selectedFiles, saveToS3)

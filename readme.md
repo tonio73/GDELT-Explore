@@ -90,6 +90,7 @@ $ ./gdelt.py --create_cluster spakr
 Caveats:
 
 - The number of S3 connections need to be increased to at least 100, see sparkConfiguration.json and [1]
+- Open the 
 
 ## Create a Cassandra cluster
 
@@ -110,7 +111,7 @@ $ ./gdelt.py --attach_volume --first_time [instance_id] [volume_id]
 Deploy Cassandra nodes
 
 ````shell script
-$ ./gdelt.py --deploy_cassandra [instance_id_1] [instance_id_2] ... [instance_id_n]
+$ ./gdelt.py --deploy_cassandra [instance_id_1 starts with 'i-'] [instance_id_2] ... [instance_id_n]
 ````
 
 ## Connect to the cassandra cluster
@@ -126,15 +127,13 @@ $ ssh -i [path_to_pem] hadoop@[public_dns_instance]
 Once connected to the instance, enter in the docker node to run the cqlsh console:
 
 ```shell script
-$ docker exec -it cassandra-node bash
-$ cqlsh
+$ docker exec -it cassandra-node cqlsh
 ```
 
 You can also check the status of the different cluster nodes:
 
 ```shell script
-$ docker exec -it cassandra-node bash
-$ nodetool status
+$ docker exec -it cassandra-node nodetool status
 ```
 
 ## Connect to the spark cluster
