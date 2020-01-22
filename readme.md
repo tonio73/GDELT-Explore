@@ -202,8 +202,6 @@ Terminate cluster:
 $ aws2 emr terminate-clusters --cluster-ids  [id starting with 'j-']
 ```
 
-
-
 # Extract-Load-Transform (ETL)
 
 The ETL is split into two parts:
@@ -244,49 +242,90 @@ Either :
 - Or with the command: 
 
   ```shell
-  sbt assembly
+  $ sbt assembly
   ```
 
-- Or:
+- Or, with run of a program included:
 
   ```shell
-  ./build_and_submit.sh <programName>
+  $ ./build_and_submit.sh [programName]
   ```
 
-  
+- Or, with deploy and run to AWS included : 
+
+  ```sh
+  $ ./aws_build_and_submit.sh [cluster ID starting with 'j-'] [script/submissionScript.json]
+  ```
+
+## Run ETL programs
+
+As seen above, some of the build scripts also deploy and run the program. It is also possible to run the program from the command line.
+
+To run locally : 
+
+```sh
+$ spark-submit --class fr.telecom.[ProgramName] target/scala-2.11/GDELT-Explore-assembly-*.jar
+```
+
+To run locally from the IntelliJ user interface:
+
+- Edit a run configuration
+- Select the class of the main program to run
+- Set the program option: **--local-master**
+- Set the classpath module to 'mainRunner'$
+- Save edit and execute
+
+On AWS : 
+
+```sh
+$ aws2 emr add-step --cluster-id [ID of cluster start with 'j-'] [file://script/submissionScript.json]
+```
+
+This will create a step on the cluster, the step surveillance is as explained in section "Cluster surveillance"
+
+### Common command line options to the ETL programs
+
+All ETL programs (MainDownload, MainQueryX) have the following options:
+
+- **--ref-period** : define the reference period as the prefix to the GDELT files. Example : '20190115'. Default set in class fr.telecom.Context
+- **--local-master** : to be used in Intellij to force declaration of the Spark master as local
+- **--from-s3** : use data from S3 for the MainQuery, and to S3 if Cassandra IP is not set (below)
+  - to S3 for the MainDownload
+- **--cassandra-ip** : to use within the EMR cluster only, sets the private IP of one of the Cassandra nodes (LATER : more than one !)
 
 ## Download GDELT data
 
-Create a folder /tmp/data (**LATER : use S3**)
+#### Locally
 
-Run the MainDownload program from the IDE or using spark-submit : 
+Create a folder /tmp/data 
 
-```shell
-spark-submit --class fr.telecom.MainDownload target/scala-2.11/GDELT-Explore-assembly-*.jar
-```
+Run the MainDownload program from the IDE or using spark-submit as explained above
 
-Command line options :
+Specific command line options :
 
 - **--index** : download the masterfile indexes first
+- **--index-only** : download the masterfile indexes and stop
 
-The reference period for the download is set in Scala object fr.telecom.Context
+#### On AWS
 
-## Query A
+See section "Run ETL programs", to apply with script/submissionMainDownload.json
 
-### ETL for query A
+## ETL for queries 
 
-From the shell using spark-submit:
+| Class                 | AWS submission scripts           |
+| --------------------- | -------------------------------- |
+| fr.telecom.MainQueryA | script/submissionMainQueryA.json |
+| fr.telecom.MainQueryB | script/submissionMainQueryB.json |
+| fr.telecom.MainQueryC | script/submissionMainQueryC.json |
+| fr.telecom.MainQueryD | script/submissionMainQueryD.json |
 
-```shell
-spark-submit --class fr.telecom.MainQueryA target/scala-2.11/GDELT-Explore-assembly-*.jar
-```
-
-**LATER: add IP of Cassandra server !**
+# Cassandra Queries
 
 ### Query A in Cassandra
 
 ```sql
-CCC
+USE gdelt;
+SELECT * FROM querya LIMIT 20;
 ```
 
 ## References
