@@ -1,5 +1,7 @@
 package fr.telecom
 
+import com.amazonaws.{AmazonServiceException, SdkClientException}
+import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
@@ -44,64 +46,94 @@ object MainQueryD extends App {
     sorted.toList
   }
 
-  // Select files corresponding to reference period (as set in Context.scala)
-  val spark = Context.createSession()
+  val logger = Context.logger
 
-  import spark.implicits._
+  try {
+    var localMaster = false
+    var fromS3 = false
+    var cassandraIp = ""
+    var refPeriod = Context.refPeriod()
+    var i: Int = 0
+    while (i < args.length) {
+      args(i) match {
+        case "--local-master" => localMaster = true
 
-  val gkgRDD: RDD[String] = Downloader.zipsToRdd(spark, Context.refPeriod() + "[0-9]*.gkg.csv.zip")
+        case "--from-s3" => fromS3 = true
 
-  val gkgDs: Dataset[GKG] = GKG.rddToDs(spark, gkgRDD)
+        case "--cassandra-ip" => {
+          i += 1
+          cassandraIp = args(i)
+        }
 
-  val gkgDsProjection = gkgDs.select("GKGRECORDID", "V2Tone", "V2Locations")
-                              .withColumn("temp", split(col("V2Tone"), ","))
-                               .withColumn("V2ToneMean",col("temp")(0).cast("Double"))
+        case "--ref-period" => {
+          i += 1
+          refPeriod = args(i)
+        }
+
+        case _ => {
+          print("Unknown argument " + args(i) + "\n")
+          print("Usage: --index to download master files\n")
+        }
+      }
+      i += 1
+    }
+
+    // Select files corresponding to reference period (as set in Context.scala)
+    val spark = Context.createSession(localMaster, cassandraIp)
+
+    import spark.implicits._
+
+    val gkgRDD: RDD[String] = Downloader.zipsToRdd(spark, refPeriod + "*.gkg.csv.zip", fromS3)
+
+    val gkgDs: Dataset[GKG] = GKG.rddToDs(spark, gkgRDD)
+
+    val gkgDsProjection = gkgDs.select("GKGRECORDID", "V2Tone", "V2Locations")
+      .withColumn("temp", split(col("V2Tone"), ","))
+      .withColumn("V2ToneMean", col("temp")(0).cast("Double"))
 
 
-  println("Launch request d)")
-  //.println(gkgDs.select("V2Locations").show(20, truncate = false))
+    logger.info("Launch request d)")
 
-  val CombinationsCountriesUDF = udf(CombinationsCountries _)
+    val CombinationsCountriesUDF = udf(CombinationsCountries _)
 
+    val reqD = gkgDsProjection.withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
+      .withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
+      .withColumn("countries", explode($"CountriesTmp"))
+      .groupBy("countries").agg(
+      mean("V2ToneMean").alias("Ton moyen"),
+      count("V2ToneMean").alias("Nombre d'articles"))
 
-  val reqD = gkgDsProjection.withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
-                        .withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
-                        .withColumn("countries", explode($"CountriesTmp"))
-                        .groupBy("countries").agg(
-                                mean("V2ToneMean").alias("Ton moyen"),
-                                count("V2ToneMean").alias("Nombre d'articles"))
+      .withColumn("country1", col("countries")(0))
+      .withColumn("country2", col("countries")(1))
+      .drop("countries")
 
-                        .withColumn("country1", col("countries")(0))
-                        .withColumn("country2", col("countries")(1))
-                        .drop("countries")
+    // Write
+    if (cassandraIp.isEmpty) {
+      // Default to CSV write either to S3 or local tmp
+      if (fromS3) {
+        reqD.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "/reqD_csv"))
+      }
+      else {
+        reqD.write.mode("overwrite").csv(Context.outputPath + "reqD_csv")
+      }
+    }
+    else {
+      // Save to Cassandra
+      val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")  // TODO for query D
+      val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO for query D
+      reqD.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "queryd", cassandraColumns)
+    }
 
+    logger.info("Completed write of request d)")
+  }
+  catch {
+    // The call was transmitted successfully, but AWS couldn't process
+    // it, so it returned an error response.
+    case e: AmazonServiceException => e.printStackTrace();
+    // AWS couldn't be contacted for a response, or the client
+    // couldn't parse the response from AWS.
+    case e: SdkClientException => e.printStackTrace();
+  }
 
-  reqD.write.mode("overwrite").csv(Context.outputPath + "/reqD_csv")
-
-  println(reqD.show(20))
-
-  println("Completed write of request d)")
-
-  /*
-  eventsDs.createOrReplaceTempView("export")
-  //spark.catalog.cacheTable("export")
-
-  spark.sql(
-    """
-    SELECT SQLDATE, Actor1Geo_CountryCode, GLOBALEVENTID
-    FROM export ORDER BY SQLDATE DESC
-    """).write.mode("overwrite").csv(Context.outputPath + "/reqTest1_csv")
-
-  spark.sql("""
-    SELECT SQLDATE, COUNT(*) as nbEvents
-    FROM export_translation GROUP BY SQLDATE
-    """).write.csv(Context.outputPath + "/reqTest2_csv")
-
-  spark.sql("""
-    SELECT SQLDATE, COUNT(*) as nbEvents
-    FROM export GROUP BY SQLDATE
-    """).write.mode("overwrite").csv(Context.outputPath + "/reqTest3_csv")
-   */
-
-  println("Program completed")
+  logger.info("Program completed")
 }
