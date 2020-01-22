@@ -3,7 +3,7 @@ package fr.telecom
 import com.amazonaws.{AmazonServiceException, SdkClientException}
 import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.expressions.Window
 
@@ -72,27 +72,17 @@ object MainQueryA extends App {
     val bestMentionsDs = mentionsDs.withColumn("row", row_number.over(w2))
       .where($"row" === 1).drop("row")
 
-    val reqA = eventsDs.as("events").join(bestMentionsDs.as("mentions"),
+    val reqA: DataFrame = eventsDs.as("events").join(bestMentionsDs.as("mentions"),
       $"events.GLOBALEVENTID" === $"mentions.GLOBALEVENTID", joinType = "left").
       groupBy("SQLDATE", "ActionGeo_CountryCode", "SRCLC").
       count()
 
     // Write
-    if (cassandraIp.isEmpty) {
-      // Default to CSV write either to S3 or local tmp
-      if (fromS3) {
-        reqA.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "reqA_csv"))
-      }
-      else {
-        reqA.write.mode("overwrite").csv(Context.outputPath + "reqA_csv")
-      }
-    }
-    else {
-      // Save to Cassandra
-      val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")
-      val cassandraColumns = SomeColumns("sqldate", "country", "language", "count")
-      reqA.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "querya", cassandraColumns)
-    }
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")
+    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count")
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqA, columnNames,
+      "reqA_csv",
+      "gdelt", "querya", cassandraColumns)
 
     logger.info("Completed write of request a)")
 

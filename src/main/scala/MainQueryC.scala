@@ -1,6 +1,7 @@
 package fr.telecom
 
 import com.amazonaws.{AmazonServiceException, SdkClientException}
+import com.datastax.spark.connector._
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions._
 
@@ -12,22 +13,51 @@ object MainQueryC extends App {
 
   try {
 
+    var localMaster = false
+    var fromS3 = false
+    var cassandraIp = ""
+    var refPeriod = Context.refPeriod()
+    var i: Int = 0
+    while (i < args.length) {
+      args(i) match {
+        case "--local-master" => localMaster = true
+
+        case "--from-s3" => fromS3 = true
+
+        case "--cassandra-ip" => {
+          i += 1
+          cassandraIp = args(i)
+        }
+
+        case "--ref-period" => {
+          i += 1
+          refPeriod = args(i)
+        }
+
+        case _ => {
+          print("Unknown argument " + args(i) + "\n")
+          print("Usage: --index to download master files\n")
+        }
+      }
+      i += 1
+    }
+
     logger.info("Create Spark session")
 
     // Select files corresponding to reference period (as set in Context.scala)
-    val spark = Context.createSession()
+    val spark = Context.createSession(localMaster, cassandraIp)
 
-    val gkgRDD = Downloader.zipsToRdd(spark, Context.refPeriod() + "*.gkg.csv.zip")
+    val gkgRDD = Downloader.zipsToRdd(spark, refPeriod + "*.gkg.csv.zip", fromS3)
     val gkgDs = GKG.rddToDs(spark, gkgRDD)
 
     logger.info("Launch request c) theme")
-    requestCByTheme(spark, gkgDs)
+    requestCByTheme(spark, gkgDs, fromS3, cassandraIp)
 
     logger.info("Launch request c) person")
-    requestCByPerson(spark, gkgDs)
+    requestCByPerson(spark, gkgDs, fromS3, cassandraIp)
 
     logger.info("Launch request c) country")
-    requestCByCountry(spark, gkgDs)
+    requestCByCountry(spark, gkgDs, fromS3, cassandraIp)
 
     logger.info("Fu-fu program completed")
   }
@@ -41,7 +71,7 @@ object MainQueryC extends App {
   }
 
   // REQUEST C BY THEME
-  def requestCByTheme(spark: SparkSession, gkgDs: Dataset[GKG]) = {
+  def requestCByTheme(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
 
     val themeDs: DataFrame = gkgDs
       //.drop(gkgDs.col("SourceCollectionIdentifier"))
@@ -60,11 +90,16 @@ object MainQueryC extends App {
       .groupBy("DATE", "SourceCommonName", "themesDef")
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    reqCtheme.write.mode("overwrite").csv(Context.outputPath + "/reqCtheme_csv")
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO WITH CORRECT COLS in Cassandra, lower case
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCtheme, columnNames,
+      "reqCtheme_csv",
+      "gdelt", "queryc_theme", cassandraColumns)
   }
 
   // REQUEST C BY PERSON
-  def requestCByPerson(spark: SparkSession, gkgDs: Dataset[GKG]) = {
+  def requestCByPerson(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
+
     val personDs: DataFrame = gkgDs
       .drop("SourceCollectionIdentifier", "DocumentIdentifier", "Counts", "V2Counts",
         "Locations", "V2Locations", "Themes", "V2Themes", "Organizations", "V2Organizations",
@@ -82,12 +117,16 @@ object MainQueryC extends App {
       .groupBy("DATE", "SourceCommonName", "personsDef")
       .agg(count("GKGRECORDID").alias("nbArtcile"), mean("V2ToneMean").alias("toneMean"))
 
-
-    reqCperson.write.mode("overwrite").csv(Context.outputPath + "/reqCperson_csv")
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO WITH CORRECT COLS in Cassandra, lower case
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCperson, columnNames,
+      "reqCperson_csv",
+      "gdelt", "queryc_person", cassandraColumns)
   }
 
   // REQUEST C BY COUNTRY
-  def requestCByCountry(spark: SparkSession, gkgDs: Dataset[GKG]) = {
+  def requestCByCountry(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
+
     val countryDs: DataFrame = gkgDs
       .drop("SourceCollectionIdentifier", "DocumentIdentifier", "Counts", "V2Counts",
         "Persons", "V2Persons", "Themes", "V2Themes", "Organizations", "V2Organizations", "Dates", "GCAM",
@@ -107,16 +146,19 @@ object MainQueryC extends App {
       .groupBy(col("DATE"), col("SourceCommonName"), col("country"))
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    reqCcountry.write.mode("overwrite").csv(Context.outputPath + "reqCcountry_csv")
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO WITH CORRECT COLS in Cassandra, lower case
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCcountry, columnNames,
+      "reqCcountry_csv",
+      "gdelt", "queryc_country", cassandraColumns)
   }
 
-  // UDF to extract country from location
+  /**
+   * Iteration sur les chaines de caractères de l'Array divisé (split) par ","
+   * pour créer la liste des pays mensionnés dans l'article
+   */
   def CombinationsCountries(string_countries: String): List[String] = {
-    /**
-     *
-     * Iteration sur les chaines de caractères de l'Array divisé (split) par ","
-     * pour créer la liste des pays mensionnés dans l'article
-     */
+
     val array_countries: Array[String] = string_countries.split("[,;]")
     val countries = ArrayBuffer[String]()
     for (s1: String <- array_countries) {

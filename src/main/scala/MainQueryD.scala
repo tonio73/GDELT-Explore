@@ -10,12 +10,13 @@ import scala.collection.mutable.ArrayBuffer
 
 object MainQueryD extends App {
 
+  /**
+   *
+   * Iteration sur les chaines de caractères de l'Array divisé (split) par ","
+   * pour créer la liste des pays mensionnés dans l'article
+   */
   def CombinationsCountries(string_countries: String): List[List[String]] = {
-    /**
-     *
-     * Iteration sur les chaines de caractères de l'Array divisé (split) par ","
-     * pour créer la liste des pays mensionnés dans l'article
-     */
+
     val array_countries: Array[String] = string_countries.split("[,;]")
     val countries = ArrayBuffer[String]()
 
@@ -108,21 +109,11 @@ object MainQueryD extends App {
       .drop("countries")
 
     // Write
-    if (cassandraIp.isEmpty) {
-      // Default to CSV write either to S3 or local tmp
-      if (fromS3) {
-        reqD.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "/reqD_csv"))
-      }
-      else {
-        reqD.write.mode("overwrite").csv(Context.outputPath + "reqD_csv")
-      }
-    }
-    else {
-      // Save to Cassandra
-      val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")  // TODO for query D
-      val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO for query D
-      reqD.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "queryd", cassandraColumns)
-    }
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO WITH CORRECT COLS in Cassandra, lower case
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqD, columnNames,
+      "reqD_csv",
+      "gdelt", "queryd", cassandraColumns)
 
     logger.info("Completed write of request d)")
   }

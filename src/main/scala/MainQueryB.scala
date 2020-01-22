@@ -69,7 +69,12 @@ object MainQueryB extends App {
     logger.info("Completed write of request b)")
 
     val columnNames = Seq("GLOBALEVENTID", "SQLDATE", "count")
-    res.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("test", "queryb", SomeColumns("globaleventid", "sqldate", "count"))
+    val cassandraCols = SomeColumns("globaleventid", "sqldate", "count")
+    Uploader.persistDataFrame(fromS3, cassandraIp,
+      res, columnNames,
+      "reqB_csv",
+      "test", "queryb", cassandraCols
+    )
 
     logger.info("Finish request b)")
   }
