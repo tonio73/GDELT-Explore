@@ -65,11 +65,15 @@ object MainQueryB extends App {
       .groupBy($"events.GLOBALEVENTID").count()
       .join(eventsDs, Seq("GLOBALEVENTID"), joinType = "left")
       .orderBy(col("count").desc)
+      .select(col("*"), substring(col("SQLDATE"), 7, 2).as("day"))
+      .select(col("*"), substring(col("SQLDATE"), 5, 2).as("month"))
+
 
     logger.info("Completed write of request b)")
 
-    val columnNames = Seq("GLOBALEVENTID", "SQLDATE", "count")
-    res.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("test", "queryb", SomeColumns("globaleventid", "sqldate", "count"))
+    val columnNames = Seq("GLOBALEVENTID", "SQLDATE", "count", "ActionGeo_CountryCode", "Year", "month", "day")
+    res.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "queryb",
+               SomeColumns("globaleventid", "sqldate", "count", "country", "year", "month", "day"))
 
     logger.info("Finish request b)")
   }
