@@ -1,7 +1,7 @@
 package fr.telecom
 
 import com.amazonaws.{AmazonServiceException, SdkClientException}
-import fr.telecom.MainQueryB.args
+import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
@@ -77,12 +77,21 @@ object MainQueryA extends App {
       groupBy("SQLDATE", "ActionGeo_CountryCode", "SRCLC").
       count()
 
-    // Currently to CSV, later to Cassandra
-    if(fromS3) {
-      reqA.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "reqA_csv"))
+    // Write
+    if (cassandraIp.isEmpty) {
+      // Default to CSV write either to S3 or local tmp
+      if (fromS3) {
+        reqA.write.mode("overwrite").csv(Context.getS3Path(Context.bucketOutputPath + "reqA_csv"))
+      }
+      else {
+        reqA.write.mode("overwrite").csv(Context.outputPath + "reqA_csv")
+      }
     }
     else {
-      reqA.write.mode("overwrite").csv(Context.outputPath + "reqA_csv")
+      // Save to Cassandra
+      val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")
+      val cassandraColumns = SomeColumns("sqldate", "country", "language", "count")
+      reqA.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "querya", cassandraColumns)
     }
 
     logger.info("Completed write of request a)")

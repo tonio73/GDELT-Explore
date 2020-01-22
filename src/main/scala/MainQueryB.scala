@@ -57,7 +57,7 @@ object MainQueryB extends App {
 
     // Request b) pour un pays donné en paramètre,
     // affichez les évènements qui y ont eu place triées par le nombre de mentions (tri décroissant);
-    // permettez une agrégation par jour/mois/année
+    // permettez une aggrégation par jour/mois/année
     logger.info("Launch request b)")
 
     // First data to put into cassandra, the country parameter must be given to cassandra and not spark (need to do filter in cassandra)
