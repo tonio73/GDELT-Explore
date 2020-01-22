@@ -312,6 +312,8 @@ See section "Run ETL programs", to apply with script/submissionMainDownload.json
 
 ## ETL for queries 
 
+NOTE : if running a new Cassandra cluster, edit the submission scripts to set the private IP of one of the Cassandra nodes.
+
 | Class                 | AWS submission scripts           |
 | --------------------- | -------------------------------- |
 | fr.telecom.MainQueryA | script/submissionMainQueryA.json |
