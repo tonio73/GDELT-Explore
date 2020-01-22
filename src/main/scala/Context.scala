@@ -63,7 +63,7 @@ object Context {
       .builder
       .config(conf)
       .appName("GDELT-ETL")
-      //.master("local[4]")
+      .master("local[4]")
       .getOrCreate()
 
     sparkSession
