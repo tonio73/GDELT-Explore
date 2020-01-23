@@ -75,28 +75,28 @@ object MainQueryC extends App {
   def requestCByTheme(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
 
     val themeDs: DataFrame = gkgDs
+      .withColumn("DATE", substring(col("DATE"),1,8))
+      .withColumn("year", substring(col("DATE"),1,4))
+      .withColumn("month", substring(col("DATE"),5,6))
+      .withColumn("day", substring(col("DATE"),7,8))
       //.drop(gkgDs.col("SourceCollectionIdentifier"))
       .drop("DocumentIdentifier", "Counts", "V2Counts", "Locations", "V2Locations", "Persons", "V2Persons",
         "Organizations", "V2Organizations", "Dates", "GCAM", "SharingImage", "RelatedImages", "SocialImageEmbeds",
         "SocialVideoEmbeds", "Quotations", "AllNames", "Amounts", "TranslationInfo", "Extras")
 
     val newDs2 = themeDs
-      .withColumn("YYYY", substring(col("DATE"),1,4))
-      .withColumn("YYYYMM", substring(col("DATE"),1,6))
-      .withColumn("YYYYMMDD", substring(col("DATE"),1,8))
       .withColumn("Themes2", split(col("Themes"), ";"))
       .withColumn("themesDef", explode(col("Themes2")))
       .withColumn("temp", split(col("V2Tone"), ","))
       .withColumn("V2ToneMean", col("temp")(0).cast("Float"))
       .na.drop()
 
-
     val reqCtheme = newDs2
-      .groupBy("DATE", "SourceCommonName", "themesDef")
+      .groupBy("DATE","year",  "month","day", "SourceCommonName", "themesDef")
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE", "SourceCommonName", "themesDef", "nbArticle", "toneMean") // TODO WITH CORRECT COLS in DF
-    val cassandraColumns = SomeColumns("date", "source", "theme", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
+    val columnNames = Seq("DATE", "year", "month","day","SourceCommonName", "themesDef", "nbArticle", "toneMean") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("date", "year", "month","day", "source", "theme", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCtheme, columnNames,
       "reqCtheme_csv",
       "gdelt", "queryc_theme", cassandraColumns)
@@ -106,6 +106,10 @@ object MainQueryC extends App {
   def requestCByPerson(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
 
     val personDs: DataFrame = gkgDs
+      .withColumn("DATE", substring(col("DATE"),1,8))
+      .withColumn("year", substring(col("DATE"),1,4))
+      .withColumn("month", substring(col("DATE"),5,6))
+      .withColumn("day", substring(col("DATE"),7,8))
       .drop("SourceCollectionIdentifier", "DocumentIdentifier", "Counts", "V2Counts",
         "Locations", "V2Locations", "Themes", "V2Themes", "Organizations", "V2Organizations",
         "Dates", "GCAM", "SharingImage", "RelatedImages", "SocialImageEmbeds", "SocialVideoEmbeds", "Quotations",
@@ -122,8 +126,8 @@ object MainQueryC extends App {
       .groupBy("DATE", "SourceCommonName", "personsDef")
       .agg(count("GKGRECORDID").alias("nbArtcile"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE", "SourceCommonName", "personsDef", "nbArticle","toneMean") // TODO WITH CORRECT COLS in DF
-    val cassandraColumns = SomeColumns("date", "source", "person", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
+    val columnNames = Seq("DATE", "year", "month","day" ,"SourceCommonName", "personsDef", "nbArticle","toneMean") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("date", "year", "month","day", "source", "person", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCperson, columnNames,
       "reqCperson_csv",
       "gdelt", "queryc_person", cassandraColumns)
@@ -133,6 +137,10 @@ object MainQueryC extends App {
   def requestCByCountry(spark: SparkSession, gkgDs: Dataset[GKG], fromS3: Boolean, cassandraIp: String) = {
 
     val countryDs: DataFrame = gkgDs
+      .withColumn("DATE", substring(col("DATE"),1,8))
+      .withColumn("year", substring(col("DATE"),1,4))
+      .withColumn("month", substring(col("DATE"),5,6))
+      .withColumn("day", substring(col("DATE"),7,8))
       .drop("SourceCollectionIdentifier", "DocumentIdentifier", "Counts", "V2Counts",
         "Persons", "V2Persons", "Themes", "V2Themes", "Organizations", "V2Organizations", "Dates", "GCAM",
         "SharingImage", "RelatedImages", "SocialImageEmbeds", "SocialVideoEmbeds", "Quotations", "AllNames", "Amounts",
@@ -151,8 +159,8 @@ object MainQueryC extends App {
       .groupBy(col("DATE"), col("SourceCommonName"), col("country"))
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE", "SourceCommonName", "country", "nbArticle", "toneMean") // TODO WITH CORRECT COLS in DF
-    val cassandraColumns = SomeColumns("date", "source", "country", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
+    val columnNames = Seq("DATE","year","month","day", "SourceCommonName", "country", "nbArticle", "toneMean") // TODO WITH CORRECT COLS in DF
+    val cassandraColumns = SomeColumns("date", "year", "month", "day", "source", "country", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCcountry, columnNames,
       "reqCcountry_csv",
       "gdelt", "queryc_country", cassandraColumns)
