@@ -88,10 +88,9 @@ object MainQueryD extends App {
 
     val gkgDs: Dataset[GKG] = GKG.rddToDs(spark, gkgRDD)
 
-    val gkgDsProjection = gkgDs.select("GKGRECORDID", "V2Tone", "V2Locations")
+    val gkgDsProjection = gkgDs.select("GKGRECORDID", "DATE" , "V2Tone", "V2Locations")
       .withColumn("temp", split(col("V2Tone"), ","))
       .withColumn("V2ToneMean", col("temp")(0).cast("Double"))
-
 
     logger.info("Launch request d)")
 
@@ -100,10 +99,8 @@ object MainQueryD extends App {
     val reqD = gkgDsProjection.withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
       .withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
       .withColumn("countries", explode($"CountriesTmp"))
-      .groupBy("countries").agg(
-      mean("V2ToneMean").alias("Ton moyen"),
-      count("V2ToneMean").alias("Nombre d'articles"))
-
+      .groupBy("countries", "DATE").agg(mean("V2ToneMean").alias("Ton moyen"),
+                                       count("V2ToneMean").alias("Nombre d'articles"))
       .withColumn("country1", col("countries")(0))
       .withColumn("country2", col("countries")(1))
       .drop("countries")
@@ -117,6 +114,8 @@ object MainQueryD extends App {
 
     logger.info("Completed write of request d)")
   }
+
+
   catch {
     // The call was transmitted successfully, but AWS couldn't process
     // it, so it returned an error response.
