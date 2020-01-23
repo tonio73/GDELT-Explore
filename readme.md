@@ -321,6 +321,10 @@ NOTE : if running a new Cassandra cluster, edit the submission scripts to set th
 | fr.telecom.MainQueryC | script/submissionMainQueryC.json |
 | fr.telecom.MainQueryD | script/submissionMainQueryD.json |
 
+```sql
+aws2 emr add-steps --cluster-id [cluster_id] --steps "file://[json_file]"
+```
+
 # Cassandra Queries
 
 ### Query A in Cassandra
