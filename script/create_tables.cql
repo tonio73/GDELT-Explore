@@ -8,15 +8,16 @@ CREATE TABLE querya(sqldate int,
     PRIMARY KEY((sqldate, country), count))
 WITH CLUSTERING ORDER BY (count DESC);
 
+
 CREATE TABLE queryb(
     country text,
-    sqldate int,
+    count int,
+    sqldate text,
     year int,
     month int,
     day int,
-    count int,
     globaleventid int,
-    PRIMARY KEY((country), count))
+    PRIMARY KEY((globaleventid), count))
 WITH CLUSTERING ORDER BY (count DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
 
