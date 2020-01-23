@@ -290,7 +290,6 @@ All ETL programs (MainDownload, MainQueryX) have the following options:
 - **--ref-period** : define the reference period as the prefix to the GDELT files. Example : '20190115'. Default set in class fr.telecom.Context
 - **--local-master** : to be used in Intellij to force declaration of the Spark master as local
 - **--from-s3** : use data from S3 for the MainQuery, and to S3 if Cassandra IP is not set (below)
-  - to S3 for the MainDownload
 - **--cassandra-ip** : to use within the EMR cluster only, sets the private IP of one of the Cassandra nodes (LATER : more than one !)
 
 ## Download GDELT data
@@ -305,6 +304,7 @@ Specific command line options :
 
 - **--index** : download the masterfile indexes first
 - **--index-only** : download the masterfile indexes and stop
+- **--to-s3** for the MainDownload to save files to S3
 
 #### On AWS
 
