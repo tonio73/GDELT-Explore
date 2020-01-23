@@ -3,17 +3,19 @@ USE gdelt;
 
 CREATE TABLE querya(sqldate int,
     country text,
-    lang text
+    lang text,
     PRIMARY KEY(sqldate, country));
 
-CREATE TABLE queryb(
+CREATE TABLE group_by_month(
     country text,
     count int,
-    sqldate int,
+    sqldate text,
     year int,
     month int,
-    day,
+    day int,
     globaleventid int,
-    PRIMARY KEY(country), count)
+    PRIMARY KEY((globaleventid), count))
 WITH CLUSTERING ORDER BY (count DESC);
+
+
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
