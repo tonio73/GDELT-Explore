@@ -124,7 +124,7 @@ object MainQueryC extends App {
 
     val reqCperson = personDs2
       .groupBy("DATE","year","month","day", "SourceCommonName", "personsDef")
-      .agg(count("GKGRECORDID").alias("nbArtcile"), mean("V2ToneMean").alias("toneMean"))
+      .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
     val columnNames = Seq("DATE", "year", "month","day" ,"SourceCommonName", "personsDef", "nbArticle","toneMean")
     val cassandraColumns = SomeColumns("date", "year", "month","day", "source", "person", "nbarticle","tonemean")
