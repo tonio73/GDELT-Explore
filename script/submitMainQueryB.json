@@ -1,6 +1,6 @@
 [
   {
-    "Name": "Submit Query a) to the EMR Spark cluster",
+    "Name": "Submit Query b) to the EMR Spark cluster",
     "Type":"CUSTOM_JAR",
     "Jar":"command-runner.jar",
     "Args":
