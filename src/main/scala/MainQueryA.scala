@@ -78,8 +78,8 @@ object MainQueryA extends App {
       count()
 
     // Write
-    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count")
-    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count")
+    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "count", "SRCLC")
+    val cassandraColumns = SomeColumns("sqldate", "country", "count", "language")
     Uploader.persistDataFrame(fromS3, cassandraIp, reqA, columnNames,
       "reqA_csv",
       "gdelt", "querya", cassandraColumns)
