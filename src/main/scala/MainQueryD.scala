@@ -117,7 +117,7 @@ object MainQueryD extends App {
     println(reqD.show(5, truncate=false))
     // Write
     val columnNames = Seq("day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2")
-    val cassandraColumns = SomeColumns("day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2") // TODO WITH CORRECT COLS in Cassandra, lower case
+    val cassandraColumns = SomeColumns("day", "month", "year", "n_articles", "mean_tone", "country1", "country2") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqD, columnNames,
       "reqD_csv",
       "gdelt", "queryd", cassandraColumns)

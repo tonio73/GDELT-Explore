@@ -19,3 +19,16 @@ CREATE TABLE queryb(
     PRIMARY KEY((country), count))
 WITH CLUSTERING ORDER BY (count DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
+
+"day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2"
+
+CREATE TABLE queryd(
+    day int,
+    month int,
+    year int,
+    n_articles int,
+    mean_tone float,
+    country1 text,
+    country2 text,
+    PRIMARY KEY((country1, country2), mean_tone, n_articles))
+WITH CLUSTERING ORDER BY (mean_tone DESC, n_articles, DESC);
