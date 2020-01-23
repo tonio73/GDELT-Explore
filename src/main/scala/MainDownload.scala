@@ -11,6 +11,7 @@ object MainDownload {
 
     // Command line args
     var downloadIndex = false
+    var downloadTranslations = false
     var downloadData = true
     var saveToS3 = false
     var localMaster = false
@@ -23,6 +24,8 @@ object MainDownload {
           downloadIndex = true
           downloadData = false
         }
+
+        case "--translations" => downloadTranslations = true
 
         case "--local-master" => localMaster = true
 
@@ -48,20 +51,22 @@ object MainDownload {
       if (downloadIndex) {
         // Download indexes (master files) to /tmp/data
 
-        logger.info("Start downloading materfilelist.txt")
+        logger.info("Start downloading materfiles")
 
         // save the list file to local
         Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist.txt",
           "masterfilelist.txt", saveToS3)
 
-        logger.info("End downloading materfilelist.txt")
+        if (downloadTranslations) {
+          Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
+            "masterfilelist-translation.txt", saveToS3)
+        }
 
-        //  Downloader.fileDownloader("http://data.gdeltproject.org/gdeltv2/masterfilelist-translation.txt",
-        //    Context.dataPath + "/masterfilelist-translation.txt") // save the list file to local
+        logger.info("End downloading materfiles")
       }
 
-      val masterFilePath = if (saveToS3) Context.getS3Path(Context.bucketDataPath + "/masterfilelist.txt")
-      else Context.dataPath + "/masterfilelist.txt"
+      val masterFilePath = if (saveToS3) Context.getS3Path(Context.bucketDataPath)
+      else Context.dataPath
 
       if (downloadData) {
 
@@ -73,14 +78,25 @@ object MainDownload {
         import spark.implicits._
 
         // List all files related to the reference period from the master file
-        val selectedFiles: Dataset[Row] = spark.sqlContext.read.
+        val selectedMasterFiles: Dataset[Row] = spark.sqlContext.read.
           option("delimiter", " ").
           option("infer_schema", "true").
-          csv(masterFilePath).
+          csv(masterFilePath + "/masterfilelist.txt").
           withColumnRenamed("_c2", "url").
           // Filter on period
           filter($"url" contains "/" + refPeriod).
           repartition(200)
+
+        val selectedFiles = if (downloadTranslations)
+          selectedMasterFiles.union(spark.sqlContext.read.
+            option("delimiter", " ").
+            option("infer_schema", "true").
+            csv(masterFilePath + "/masterfilelist-translation.txt").
+            withColumnRenamed("_c2", "url").
+            // Filter on period
+            filter($"url" contains "/" + refPeriod))
+        else
+          selectedMasterFiles
 
         logger.info("Start downloading selection on reference period %s, total count = %d".format(refPeriod, selectedFiles.count))
 
