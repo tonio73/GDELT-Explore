@@ -22,7 +22,7 @@ object MainTestS3c extends App {
       i += 1
     }
 
-    val spark = Context.createSession(localMaster)
+    val spark = Context.createSession("GDELT-ETL-TestS3c", localMaster)
 
     logger.info("Spark session created")
 
