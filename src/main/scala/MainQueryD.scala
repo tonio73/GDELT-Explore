@@ -101,18 +101,19 @@ object MainQueryD extends App {
       .withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
       .withColumn("countries", explode($"CountriesTmp"))
 
-      .groupBy("countries", "DATE").agg(mean("V2ToneMean").alias("Ton moyen"),
+        .withColumn("day", substring($"DATE", 7, 2))
+        .withColumn("month", substring($"DATE", 5, 2))
+        .withColumn("year", substring($"DATE", 1, 4))
+        .drop("DATE")
+
+      .groupBy("countries", "day", "month", "year").agg(mean("V2ToneMean").alias("Ton moyen"),
                                        count("V2ToneMean").alias("Nombre d'articles"))
 
       .withColumn("country1", col("countries")(0))
       .withColumn("country2", col("countries")(1))
       .drop("countries")
 
-      .withColumn("day", substring($"DATE", 7, 2))
-      .withColumn("month", substring($"DATE", 5, 2))
-      .withColumn("year", substring($"DATE", 1, 4))
 
-      .drop("DATE")
 
     println(reqD.show(5, truncate=false))
     // Write
