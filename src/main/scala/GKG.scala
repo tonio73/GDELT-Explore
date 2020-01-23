@@ -42,7 +42,7 @@ object GKG {
 
     import spark.implicits._
 
-    eventsRDD.map(_.split("\t")).filter(_.length == 25).map(
+    eventsRDD.map(_.split("\t")).filter(_.length >= 25).map(
       e => GKG(
         e(0), toLong(e(1)), toInt(e(2)), e(3), e(4),
         e(5), e(6), e(7), e(8), e(9), e(10), e(11), e(12), e(13), e(14),

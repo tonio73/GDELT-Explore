@@ -94,20 +94,30 @@ object MainQueryD extends App {
 
     logger.info("Launch request d)")
 
+
     val CombinationsCountriesUDF = udf(CombinationsCountries _)
 
     val reqD = gkgDsProjection.withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
       .withColumn("CountriesTmp", CombinationsCountriesUDF($"V2Locations"))
       .withColumn("countries", explode($"CountriesTmp"))
+
       .groupBy("countries", "DATE").agg(mean("V2ToneMean").alias("Ton moyen"),
                                        count("V2ToneMean").alias("Nombre d'articles"))
+
       .withColumn("country1", col("countries")(0))
       .withColumn("country2", col("countries")(1))
       .drop("countries")
 
+      .withColumn("day", substring($"DATE", 7, 2))
+      .withColumn("month", substring($"DATE", 5, 2))
+      .withColumn("year", substring($"DATE", 1, 4))
+
+      .drop("DATE")
+
+    println(reqD.show(5, truncate=false))
     // Write
-    val columnNames = Seq("SQLDATE", "ActionGeo_CountryCode", "SRCLC", "count") // TODO WITH CORRECT COLS in DF
-    val cassandraColumns = SomeColumns("sqldate", "country", "language", "count") // TODO WITH CORRECT COLS in Cassandra, lower case
+    val columnNames = Seq("day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2")
+    val cassandraColumns = SomeColumns("day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqD, columnNames,
       "reqD_csv",
       "gdelt", "queryd", cassandraColumns)
