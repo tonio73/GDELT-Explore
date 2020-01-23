@@ -23,6 +23,9 @@ WITH CLUSTERING ORDER BY (count DESC);
 
 CREATE TABLE queryctheme(
     date int,
+    year text,
+    month text,
+    day text,
     source text,
     theme text,
     nbarticle int,
@@ -33,6 +36,9 @@ WITH CLUSTERING ORDER BY (nbarticle DESC);
 
 CREATE TABLE querycperson(
     date int,
+    year text,
+    month text,
+    day text,
     source text,
     person text,
     nbarticle int,
@@ -43,6 +49,9 @@ WITH CLUSTERING ORDER BY (nbarticle DESC);
 
 CREATE TABLE queryccountry(
     date int,
+    year text,
+    month text,
+    day text,
     source text,
     country text,
     nbarticle int,
