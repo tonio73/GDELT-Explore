@@ -28,7 +28,7 @@ CREATE TABLE queryd(
     year int,
     n_articles int,
     mean_tone float,
-    country1 text,
-    country2 text,
+    country1 text [STATIC],
+    country2 text [STATIC],
     PRIMARY KEY((country1, country2), mean_tone, n_articles))
 WITH CLUSTERING ORDER BY (mean_tone DESC, n_articles, DESC);
