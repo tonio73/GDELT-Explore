@@ -18,7 +18,7 @@ object Context {
   // Path to data
   val dataPath = "/tmp/data/" // System.getProperty("user.dir") + "/data"
 
-  val outputPath = "/tmp/bigdata"
+  val outputPath = "/tmp/bigdata/"
 
   val bucketName = "fufu-program"
 
