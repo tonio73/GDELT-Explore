@@ -7,7 +7,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 // GDELT Event data object extracted from BigQuery
 case class Event(
                   GLOBALEVENTID: Int,
-                  SQLDATE: Int,
+                  SQLDATE: String,
                   MonthYear: Int,
                   Year: Int,
                   FractionDate: Double,
@@ -83,7 +83,7 @@ object Event {
 
     eventsRDD.map(_.split("\t")).filter(_.length == 61).map(
       e => Event(
-        toInt(e(0)), toInt(e(1)), toInt(e(2)), toInt(e(3)), toDouble(e(4)),
+        toInt(e(0)), e(1), toInt(e(2)), toInt(e(3)), toDouble(e(4)),
         e(5), e(6), e(7), e(8), e(9), e(10), e(11), e(12), e(13), e(14), // Actor 1
         e(15), e(16), e(17), e(18), e(19), e(20), e(21), e(22), e(23), e(24), // Actor 2
         toInt(e(25)), e(26), e(27), e(28), toInt(e(29)), toDouble(e(30)), toInt(e(31)),
