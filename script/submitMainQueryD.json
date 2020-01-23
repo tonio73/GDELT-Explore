@@ -1,6 +1,6 @@
 [
   {
-    "Name": "Submit Query a) to the EMR Spark cluster",
+    "Name": "Submit Query d) to the EMR Spark cluster",
     "Type":"CUSTOM_JAR",
     "Jar":"command-runner.jar",
     "Args":
@@ -10,7 +10,7 @@
       "--class", "fr.telecom.MainQueryD",
       "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar",
       "--from-s3",
-      "--cassandra-ip", "172.31.80.236"
+      "--cassandra-ip", "172.31.80.79"
     ],
     "ActionOnFailure": "CONTINUE"
   }
