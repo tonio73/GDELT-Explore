@@ -23,35 +23,33 @@ WITH CLUSTERING ORDER BY (count DESC);
 
 CREATE TABLE queryctheme(
     date int,
-    source string,
-    theme string,
+    source text,
+    theme text,
     nbarticle int,
     tonemean float,
-    PRIMARY KEY((country), count))
-WITH CLUSTERING ORDER BY (nbartcile DESC);
+    PRIMARY KEY((theme), nbarticle))
+WITH CLUSTERING ORDER BY (nbarticle DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
 
 CREATE TABLE querycperson(
     date int,
-    source string,
-    person string,
+    source text,
+    person text,
     nbarticle int,
     tonemean float,
-    PRIMARY KEY((country), count))
-WITH CLUSTERING ORDER BY (nbartcile DESC);
+    PRIMARY KEY((person), nbarticle))
+WITH CLUSTERING ORDER BY (nbarticle DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
 
 CREATE TABLE queryccountry(
     date int,
-    source string,
-    country string,
+    source text,
+    country text,
     nbarticle int,
     tonemean float,
-    PRIMARY KEY((country), count))
-WITH CLUSTERING ORDER BY (nbartcile DESC);
+    PRIMARY KEY((country), nbarticle))
+WITH CLUSTERING ORDER BY (nbarticle DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
-
-// "day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2"
 
 CREATE TABLE queryd(
     day int,

@@ -99,7 +99,7 @@ object MainQueryC extends App {
     val cassandraColumns = SomeColumns("date", "source", "theme", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCtheme, columnNames,
       "reqCtheme_csv",
-      "gdelt", "queryc_theme", cassandraColumns)
+      "gdelt", "queryctheme", cassandraColumns)
   }
 
   // REQUEST C BY PERSON
@@ -126,7 +126,7 @@ object MainQueryC extends App {
     val cassandraColumns = SomeColumns("date", "source", "person", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCperson, columnNames,
       "reqCperson_csv",
-      "gdelt", "queryc_person", cassandraColumns)
+      "gdelt", "querycperson", cassandraColumns)
   }
 
   // REQUEST C BY COUNTRY
@@ -155,7 +155,7 @@ object MainQueryC extends App {
     val cassandraColumns = SomeColumns("date", "source", "country", "nbarticle","tonemean") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqCcountry, columnNames,
       "reqCcountry_csv",
-      "gdelt", "queryc_country", cassandraColumns)
+      "gdelt", "queryccountry", cassandraColumns)
   }
 
   /**
