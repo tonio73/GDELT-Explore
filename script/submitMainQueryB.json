@@ -10,7 +10,8 @@
       "--class", "fr.telecom.MainQueryB",
       "s3://fufu-program/jars/GDELT-Explore-assembly-0.1.0.jar",
       "--from-s3",
-      "--cassandra-ip", "172.31.80.79"
+      "--cassandra-ip", "172.31.80.79",
+      "--ref-period", "20190"
     ],
     "ActionOnFailure": "CONTINUE"
   }
