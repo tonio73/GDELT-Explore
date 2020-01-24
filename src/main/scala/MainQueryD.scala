@@ -119,7 +119,7 @@ object MainQueryD extends App {
     val cassandraColumns = SomeColumns("day", "month", "year", "n_articles", "mean_tone", "country1", "country2") // TODO WITH CORRECT COLS in Cassandra, lower case
     Uploader.persistDataFrame(fromS3, cassandraIp, reqD, columnNames,
       "reqD_csv",
-      "gdelt", "queryd", cassandraColumns)
+      "gdelt", "queryd2", cassandraColumns)
 
     logger.info("Completed write of request d)")
   }

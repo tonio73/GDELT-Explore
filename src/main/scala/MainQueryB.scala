@@ -72,7 +72,7 @@ object MainQueryB extends App {
     logger.info("Completed write of request b)")
 
     val columnNames = Seq("GLOBALEVENTID", "SQLDATE", "count", "ActionGeo_CountryCode", "Year", "month", "day")
-    res.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "queryb",
+    res.select(columnNames.map(c => col(c)): _*).rdd.saveToCassandra("gdelt", "queryb2",
                SomeColumns("globaleventid", "sqldate", "count", "country", "year", "month", "day"))
 
     logger.info("Finish request b)")
