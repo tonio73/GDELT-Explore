@@ -80,7 +80,7 @@ object MainQueryD extends App {
     }
 
     // Select files corresponding to reference period (as set in Context.scala)
-    val spark = Context.createSession(localMaster, cassandraIp)
+    val spark = Context.createSession("GDELT-ETL-MainQueryD", localMaster, cassandraIp)
 
     import spark.implicits._
 
@@ -93,7 +93,6 @@ object MainQueryD extends App {
       .withColumn("V2ToneMean", col("temp")(0).cast("Double"))
 
     logger.info("Launch request d)")
-
 
     val CombinationsCountriesUDF = udf(CombinationsCountries _)
 
@@ -113,9 +112,8 @@ object MainQueryD extends App {
       .withColumn("country2", col("countries")(1))
       .drop("countries")
 
+    // println(reqD.show(5, truncate=false))
 
-
-    println(reqD.show(5, truncate=false))
     // Write
     val columnNames = Seq("day", "month", "year", "Nombre d'articles", "Ton moyen", "country1", "country2")
     val cassandraColumns = SomeColumns("day", "month", "year", "n_articles", "mean_tone", "country1", "country2") // TODO WITH CORRECT COLS in Cassandra, lower case

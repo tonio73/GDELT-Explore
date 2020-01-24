@@ -44,7 +44,7 @@ object MainQueryB extends App {
     logger.info("Create Spark session")
 
     // Select files corresponding to reference period (as set in Context.scala)
-    val spark = Context.createSession(localMaster, cassandraIp)
+    val spark = Context.createSession("GDELT-ETL-MainQueryB", localMaster, cassandraIp)
 
     import spark.implicits._
 

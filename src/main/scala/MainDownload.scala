@@ -73,7 +73,7 @@ object MainDownload {
         logger.info("Setup spark session")
 
         // Select files corresponding to reference period (as set in Context.scala)
-        val spark = Context.createSession(localMaster)
+        val spark = Context.createSession("GDELT-ETL-MainDownload", localMaster)
 
         import spark.implicits._
 

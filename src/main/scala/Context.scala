@@ -40,7 +40,7 @@ object Context {
   }
 
   // Create and config a Spark session
-  def createSession(localMaster: Boolean, cassandraServerIp: String = ""): SparkSession = {
+  def createSession(appName: String, localMaster: Boolean, cassandraServerIp: String = ""): SparkSession = {
     val conf = new SparkConf().setAll(Map(
       "spark.scheduler.mode" -> "FIFO",
       "spark.speculation" -> "false",
@@ -64,7 +64,7 @@ object Context {
 
     val sparkSessionBuilder = SparkSession.builder
       .config(conf)
-      .appName("GDELT-ETL")
+      .appName(appName)
 
     if (localMaster) {
       sparkSessionBuilder.master("local[4]")
