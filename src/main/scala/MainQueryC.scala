@@ -95,11 +95,12 @@ object MainQueryC extends App {
       .groupBy("DATE","year",  "month","day", "SourceCommonName", "themesDef")
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE", "year", "month","day","SourceCommonName", "themesDef", "nbArticle", "toneMean")
-    val cassandraColumns = SomeColumns("date", "year", "month","day", "source", "theme", "nbarticle","tonemean")
-    Uploader.persistDataFrame(fromS3, cassandraIp, reqCtheme, columnNames,
+    val columnNamesTheme = Seq("DATE", "year", "month","day","SourceCommonName", "themesDef", "nbArticle", "toneMean")
+
+    val cassandraColumnsTheme = SomeColumns("date", "year", "month","day", "source", "theme", "nbarticle","tonemean")
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCtheme, columnNamesTheme,
       "reqCtheme_csv",
-      "gdelt", "queryctheme", cassandraColumns)
+      "gdelt", "queryctheme", cassandraColumnsTheme)
   }
 
   // REQUEST C BY PERSON
@@ -124,13 +125,14 @@ object MainQueryC extends App {
 
     val reqCperson = personDs2
       .groupBy("DATE","year","month","day", "SourceCommonName", "personsDef")
-      .agg(count("GKGRECORDID").alias("nbArtcile"), mean("V2ToneMean").alias("toneMean"))
+      .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE", "year", "month","day" ,"SourceCommonName", "personsDef", "nbArticle","toneMean")
-    val cassandraColumns = SomeColumns("date", "year", "month","day", "source", "person", "nbarticle","tonemean")
-    Uploader.persistDataFrame(fromS3, cassandraIp, reqCperson, columnNames,
+
+    val columnNamesPerson = Seq("DATE", "year", "month","day" ,"SourceCommonName", "personsDef", "nbArticle","toneMean")
+    val cassandraColumnsPerson = SomeColumns("date", "year", "month","day", "source", "person", "nbarticle","tonemean")
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCperson, columnNamesPerson,
       "reqCperson_csv",
-      "gdelt", "querycperson", cassandraColumns)
+      "gdelt", "querycperson", cassandraColumnsPerson)
   }
 
   // REQUEST C BY COUNTRY
@@ -160,11 +162,12 @@ object MainQueryC extends App {
       //.groupBy(col("DATE"), col("year"), col("month"), col("day"), col("SourceCommonName"), col("country"))
       .agg(count("GKGRECORDID").alias("nbArticle"), mean("V2ToneMean").alias("toneMean"))
 
-    val columnNames = Seq("DATE","year","month","day", "SourceCommonName", "country", "nbArticle", "toneMean")
-    val cassandraColumns = SomeColumns("date", "year", "month", "day", "source", "country", "nbarticle","tonemean")
-    Uploader.persistDataFrame(fromS3, cassandraIp, reqCcountry, columnNames,
+
+    val columnNamesCountry = Seq("DATE","year","month","day", "SourceCommonName", "country", "nbArticle", "toneMean")
+    val cassandraColumnsCountry = SomeColumns("date", "year", "month", "day", "source", "country", "nbarticle","tonemean")
+    Uploader.persistDataFrame(fromS3, cassandraIp, reqCcountry, columnNamesCountry,
       "reqCcountry_csv",
-      "gdelt", "queryccountry", cassandraColumns)
+      "gdelt", "queryccountry", cassandraColumnsCountry)
   }
 
   /**
