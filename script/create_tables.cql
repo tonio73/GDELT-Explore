@@ -9,7 +9,7 @@ CREATE TABLE querya(sqldate int,
 WITH CLUSTERING ORDER BY (count DESC);
 
 
-CREATE TABLE queryb(
+CREATE TABLE queryb2(
     country text,
     count int,
     sqldate text,
@@ -60,13 +60,13 @@ CREATE TABLE queryccountry(
 WITH CLUSTERING ORDER BY (nbarticle DESC);
 // PRIMARY KEY(country, year, month, day), count) WITH CLUSTERING ORDER BY (count DESC);
 
-CREATE TABLE queryd(
+CREATE TABLE queryd2(
     day int,
     month int,
     year int,
     n_articles int,
     mean_tone float,
-    country1 text,
-    country2 text,
+    country1 text ,
+    country2 text ,
     PRIMARY KEY((country1, country2), mean_tone, n_articles))
 WITH CLUSTERING ORDER BY (mean_tone DESC, n_articles DESC);
