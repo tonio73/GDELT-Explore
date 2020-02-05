@@ -12,13 +12,13 @@ query some information on GDELT dataset.
 
 ![gdelt_infra](./doc/image/gdelt.PNG)
 
-### Prerequisites
+## Prerequisites
 
 You need to install the following dependencies before the creation of the platform
 - [aws2 cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux-mac.html)
 - [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (also installed through pip in the requirements.txt file, see below)
 
-### Launch the AWS architecture
+## Launch the AWS platform
 
 __Configure aws2 cli__
 
@@ -67,11 +67,11 @@ Note that key pairs are restricted to each user.
 gdeltKeyPair-educate.pem for the name of the pem file is mandatory.
 
 ```shell script
-$ git clone https://github.com/tonio73/GDELT-Explore.git
+$ git clone [repo_url]
 $ mkdir GDELT-Explore/secrets && cp [path_to_pem] secrets/gdeltKeyPair-educate.pem
 ```
 
-## Use the _gdelt_ cli
+### Use the _gdelt_ cli
 
 ```shell script
 $ cd GDELT-Explore/
@@ -87,12 +87,12 @@ In the  __script/__ folder, there is a  __gdelt.py__ script file which contains 
 To get some help, run the following command:
 
 ````shell script
-$ ./gdelt.py --help
+$ python script/gdelt.py --help
 ````
-## Create a spark cluster
+### Create a spark cluster
 
 ```sh
-$ ./gdelt.py --create_cluster spakr
+$ python script/gdelt.py --create_cluster spark
 ```
 
 Caveats:
@@ -100,29 +100,31 @@ Caveats:
 - The number of S3 connections need to be increased to at least 100, see sparkConfiguration.json and [1]
 - Open the 
 
-## Create a Cassandra cluster
+##" Create a Cassandra cluster
 
 ````shell script
-$ ./gdelt.py --create_cluster cassandra
+$ python script/gdelt.py --create_cluster cassandra
 ````
 Create the volumes:
 
 ````shell script
-$ ./gdelt.py --create_volume 3 [availability zone of the cluster]
+$ python script/gdelt.py --create_volume 3 [availability zone of the cluster]
 ````
 Attach a volume (A volume need to be formatted when you use it for the first time):
 
 ````shell script
-$ ./gdelt.py --attach_volume --first_time [instance_id] [volume_id]
+$ python script/gdelt.py --attach_volume --first_time [instance_id] [volume_id]
 ````
 
 Deploy Cassandra nodes
 
 ````shell script
-$ ./gdelt.py --deploy_cassandra [instance_id_1 starts with 'i-'] [instance_id_2] ... [instance_id_n]
+$ python script/gdelt.py --deploy_cassandra [instance_id_1 starts with 'i-'] [instance_id_2] ... [instance_id_n]
 ````
 
-## Connect to the cassandra cluster
+## Interact with the platform
+
+### Connect to the cassandra cluster
 
 __CQLSH__
 
@@ -144,28 +146,50 @@ You can also check the status of the different cluster nodes:
 $ docker exec -it cassandra-node nodetool status
 ```
 
-## Connect to the spark cluster
+### Connect to the spark cluster
 
-You have two ways to access to the cluster:
+You have two ways to access the cluster:
 
-- Zeppelin
-- spark-shell
-- spark-submit
+- Jupyter
+- Spark-submit
 
-#### SSH connection to the cluster
+__Jupyter__
 
-__You first need to open inbound connections on port 22 as SSH/TCP/Anywhere from the resource group of the master.__
+A remote jupyter container run on the master node of the spark cluster. To access it, you need to get the token of the
+notebook:
 
-```sh
-$ ssh -i ./secrets/gdeltKeyPair-educate.pem  -L 8088:127.0.0.1:8088 \
--L 8042:127.0.0.1:8042  -L 50470:127.0.0.1:50470  -L 50475:127.0.0.1:50475  \
--L 18080:127.0.0.1:18080  -L 8890:127.0.0.1:8890  -L 8888:127.0.0.1:8888  \
--L 16010:127.0.0.1:16010 -L 9443:127.0.0.1:9443 hadoop@[cluster master URL]
+```shell script
+$ ssh -i ./secrets/gdeltKeyPair-educate.pem hadoop@[cluster master DNS]
 ```
+Once connected to the master node, run the following command to obtain the name or id of the jupyter container.
+
+```shell script
+$ docker ps
+```
+
+Copy the name or id of the container then use it to acces the container's console.
+
+```shell script
+$ docker exec -it [name_or_id] bash
+$ jupyter notebook list
+```
+
+Keep the token provide by the notebook. You will use it later.
+
+![gdelt_infra](./doc/image/token.PNG)
+
+Now, you need to open inbound connections on port from the master node to you local computer
+
+```shell script
+$ ssh -N -L 8088:localhost:10000 -i secrets/gdeltKeyPair-educate.pem hadoop@[cluster master DNS]
+```
+
+You can acces the jupyterlab UI by open the following link [jupyterlab](http://localhost:8088). Don't forget to paste
+the requested token.
 
 Reference: https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-web-interfaces.html
 
-### Submit a spark program
+__Spark submit__
 
 Initially create a S3 bucket to load the program to:
 
@@ -190,7 +214,7 @@ $ aws2 emr describe-step --cluster-id [id starting with 'j-'] --step-id [id star
 
 
 
-## Cluster surveillance
+## Monitoring the platform
 
 Check cluster status:
 
@@ -210,7 +234,7 @@ Terminate cluster:
 $ aws2 emr terminate-clusters --cluster-ids  [id starting with 'j-']
 ```
 
-# Extract-Load-Transform (ETL)
+##  Development side - the ETL
 
 The ETL is split into two parts:
 
