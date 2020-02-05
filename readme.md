@@ -357,11 +357,13 @@ SELECT * FROM queryd LIMIT 20;
 
 ### Query D
 
-This Cassandra table stores the **mean tone** and the **number of articles** for each **country pair** present in GDELT GKG relation for each day of the year **2019**. The aim of this notebook is to exhibit some results from this table.
+This Cassandra table stores the **mean tone** and the **number of articles** for each **country pair** present in GDELT GKG relation for each day of the year **2019**. The aim of this notebook is to exhibit some results from this table. 
 
-[img: src=notebooks/QueryD.png]
+The link bellow show the interactive plot of the mean tone and the number of articles per country pairs:
 
-[Mean tone and number of articles visualtisation](notebooks/QueryD.html)
+[Interactive visualtisation of mean tone and number of articles per country pairs](notebooks/QueryD.html)
+
+![gdelt_infra](QueryD.png)
 
 
 
