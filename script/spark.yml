@@ -9,5 +9,5 @@
     - name: Wait for spark cluster running state
       command: aws2 emr wait cluster-running --cluster-id "{{ spark_cluster_id.stdout }}"
 
-    - name: Set concurrency level
-      command: aws2 emr modify-cluster --cluster-id "{{ spark_cluster_id.stdout }}" --step-concurrency-level 4
+    - name: Set concurrency level (AWS CLI v1 required)
+      command: aws emr modify-cluster --cluster-id "{{ spark_cluster_id.stdout }}" --step-concurrency-level 4
