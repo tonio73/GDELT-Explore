@@ -1,16 +1,24 @@
 # AWS project - GDELT dataset
 
-[TOC]
+the [GDELT](https://www.gdeltproject.org/) Project monitors the world's broadcast, print, and web news from nearly every corner of every country in over
+100 languages and identifies the people, locations, organizations, themes, sources, emotions, counts, quotes, images and
+events driving our global society every second of every day, creating a free open platform for computing on the entire 
+world.
 
-# Infrastructure
+The goal of this project is to propose a resilient and efficient distributed storage system on AWS that allow users to 
+query some information on GDELT dataset.
 
-## Prerequisites
+## Infrastructure
+
+![gdelt_infra](./doc/image/gdelt.PNG)
+
+### Prerequisites
 
 You need to install the following dependencies before the creation of the platform
 - [aws2 cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux-mac.html)
 - [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (also installed through pip in the requirements.txt file, see below)
 
-## Launch the AWS architecture
+### Launch the AWS architecture
 
 __Configure aws2 cli__
 
