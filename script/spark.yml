@@ -11,3 +11,24 @@
 
     - name: Set concurrency level
       command: aws2 emr modify-cluster --cluster-id "{{ spark_cluster_id.stdout }}" --step-concurrency-level 4
+
+    - name: Get Public master
+      command: aws emr describe-cluster --cluster-id "{{ spark_cluster_id.stdout }}" --query Cluster.MasterPublicDnsName
+      register: public_dns_master
+
+    - name: Update yum repo on master
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_master.stdout }}" sudo yum update -y
+
+    - name: Install docker on master node
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_master.stdout }}" sudo yum install docker -y
+
+    - name: Launch docker service on master
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_master.stdout }}" sudo service docker start
+
+    - name: Add hadoop user to docker group
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_master.stdout }}" sudo usermod -aG docker hadoop
+
+    - name: Launch jupyter container
+      command: ssh -o StrictHostKeyChecking=no -i ../secrets/gdeltKeyPair-educate.pem hadoop@"{{ public_dns_master.stdout }}" docker run -d --name jupyter -p 10000:8888 -e JUPYTER_ENABLE_LAB=yes jupyter/all-spark-notebook
+
+
